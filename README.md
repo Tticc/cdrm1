@@ -21,3 +21,18 @@ mvn install:install-file
 -Dpackaging=jar  
 
 
+# Linux命令  
+## 命令  
+### 查找和杀进程  
+ps -aux | grep eclipse  
+ps -ef | grep eclipse  
+直接查出PID  
+pgrep eclipse  
+强制杀死进程  
+kill -s 9 PID  
+
+
+
+
+
+
