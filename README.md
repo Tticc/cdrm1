@@ -21,8 +21,20 @@ mvn install:install-file
 -Dpackaging=jar  
 
 
-# Linux命令  
-## 命令  
+# Linux  
+## Linux Mysql  
+1.查看mysql配置
+cat /etc/mysql/my.cnf
+如下：
+!includedir /etc/mysql/conf.d/
+!includedir /etc/mysql/mysql.conf.d/
+2.修改 /etc/mysql/mysql.conf.d/mysqld.cnf, 在[mysqld]下添加 skip-grant-tables
+保持，重启mysql服务
+sudo service mysql status
+sudo service mysql stop
+sudo service mysql start
+
+## Linux命令  
 ### 查找和杀进程  
 ps -aux | grep eclipse  
 ps -ef | grep eclipse  
@@ -31,7 +43,10 @@ pgrep eclipse
 强制杀死进程  
 kill -s 9 PID  
 
-
+# git
+git rm -r dir
+git commit -m "re dir"
+git push -u origin master
 
 
 

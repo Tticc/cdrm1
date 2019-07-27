@@ -23,6 +23,7 @@ public class DataSourceConfig {
 	 * @return
 	 * @date 2019年7月22日
 	 */
+	@Primary
 	@Bean(name = "mysqlDataSource")
 	@Qualifier("mysqlDataSource")
 	@ConfigurationProperties(prefix="spring.datasource.mysql")
@@ -32,13 +33,12 @@ public class DataSourceConfig {
 
     
 
-	@Primary
-	@Bean(name = "oracleDataSource")
-	@Qualifier("oracleDataSource")
-	@ConfigurationProperties(prefix = "spring.datasource.oracle")
-	public DataSource oracleDataSource() {
-		return DataSourceBuilder.create().build();
-	}
+//	@Bean(name = "oracleDataSource")
+//	@Qualifier("oracleDataSource")
+//	@ConfigurationProperties(prefix = "spring.datasource.oracle")
+//	public DataSource oracleDataSource() {
+//		return DataSourceBuilder.create().build();
+//	}
 	@Bean(name="dynamicDataSource")
 	public DataSource dynamicDataSource() {
 		DynamicRoutingDataSource dynamicRoutingDataSource = new DynamicRoutingDataSource();
@@ -46,7 +46,7 @@ public class DataSourceConfig {
 		//设置数据源
 		Map<Object, Object> dataSourceMap = new HashMap<>(2);		
 		dataSourceMap.put(DataSourceKey.mysql.name(), mysqlDataSource());
-		dataSourceMap.put(DataSourceKey.oracle.name(),oracleDataSource());
+//		dataSourceMap.put(DataSourceKey.oracle.name(),oracleDataSource());
 		
 		dynamicRoutingDataSource.setDefaultTargetDataSource(mysqlDataSource());
 		dynamicRoutingDataSource.setTargetDataSources(dataSourceMap);
