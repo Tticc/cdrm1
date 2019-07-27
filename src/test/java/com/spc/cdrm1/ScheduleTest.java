@@ -25,4 +25,8 @@ public class ScheduleTest {
 			}
 		});
 	}
+	@Test
+	public void test_dateformat() {
+		System.out.println("close");
+	}
 }
