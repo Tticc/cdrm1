@@ -10,7 +10,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.spc.cdrm1.dao.ProductRepository;
 import com.spc.cdrm1.entity.Product;
+import com.spc.cdrm1.util.CustomizeDataSource;
 import com.spc.cdrm1.util.ResultVOUtil;
+import com.spc.cdrm1.util.enums.DataSourceKey;
 import com.spc.cdrm1.util.enums.ResultEnum;
 import com.spc.cdrm1.vo.ResultVO;
 
@@ -23,6 +25,8 @@ public class ProductService {
 	//@Transactional(transactionManager="transactionManagerMysql")
 	//使用不同的事务会使之保存到不同的数据库吗？？？？？？？？？？？？？？？？？？？？？？？？？
 	//@Transactional(transactionManager="transactionManagerOracle")
+	@CustomizeDataSource("mysql")
+	//@CustomizeDataSource("oracle")
 	public ResultVO save(Product entity) {
 		try {
 			productRepository.save(entity);

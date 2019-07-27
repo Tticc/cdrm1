@@ -6,7 +6,8 @@ import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class CommonTest {
-
+	
+	
 	@Test
 	public void testArraysAdd() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 		Class.forName("com.spc.cdrm1.CommonTest").newInstance();
@@ -16,6 +17,23 @@ public class CommonTest {
 		System.out.println(Long.TYPE);
 		System.out.println(long.class);
 		System.out.println(Long.class);
+	}
+	@Test
+	public void tetArray() {
+		Integer[] str = new Integer[10];
+		System.out.println(str[5]);
+	}
+	
+	@Test
+	public void testBreak() {
+		for(int j = 0; j < 2; j ++) {
+		for(int i = 0; i < 10; i++) {
+			if(i>5) {
+				break;
+			}
+			System.out.println(i);
+		}
+		}
 	}
 	
 	
@@ -58,3 +76,6 @@ public class CommonTest {
 		System.out.println("main thread end");
 	}
 }
+
+
+

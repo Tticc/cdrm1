@@ -3,6 +3,7 @@ package com.spc.cdrm1.dao;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.spc.cdrm1.entity.Product;
 
@@ -23,5 +24,13 @@ public interface ProductRepository extends JpaRepository<Product,Long>{
 	 * @return
 	 * @date 2019年7月22日
 	 */
-	List<Product> findByNameLike(String name);
+	List<Product> findByNameLike(String name);	
+	/**
+	 * 手写SQL查询
+	 * @author Wen, Changying
+	 * @return
+	 * @date 2019年7月23日
+	 */
+	@Query(value = "SELECT p FROM Product p")
+    List<Product> queryList();
 }
