@@ -64,7 +64,11 @@
 		    <artifactId>spring-boot-starter-redis</artifactId>
 		    <version>1.4.7.RELEASE</version>
 		</dependency>
-		
+		<dependency>
+		    <groupId>cn.hutool</groupId>
+		    <artifactId>hutool-all</artifactId>
+		    <version>4.1.21</version>
+		</dependency>
 		
 		
 		<dependency>
