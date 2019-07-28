@@ -45,10 +45,5 @@ public class TestController {
 //	public String testswagger(HttpServletRequest request) {
 //		return "index";
 //	}
-	
-	@GetMapping("/{path}")
-	public String getPath(HttpServletRequest request,@PathVariable String path) {
-		return path;
-	}
 
 }

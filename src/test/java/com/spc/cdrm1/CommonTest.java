@@ -85,6 +85,17 @@ public class CommonTest {
 		System.out.println("main thread end");
 	}
 }
+class Super{
+	Super(String name){}
+}
+class Sub extends Super{
 
+	Sub(String name) {
+		super(name);
+		// TODO Auto-generated constructor stub
+	}
+
+	
+}
 
 

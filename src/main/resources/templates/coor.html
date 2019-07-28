@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" >
-<head>
     <meta charset="utf-8"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1"/>
     <meta name="renderer" content="webkit"/>
@@ -9,14 +8,14 @@
     <meta http-equiv="Cache-Control" content="no-siteapp"/>
 	<title>协作写作</title>
 	<!-- bootstrap -->
-    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet"/>
+	<link th:href="@{/css/bootstrap3.css}" rel="stylesheet"/>
     <script th:src="@{/js/jquery.min.js}"></script>
-    <script th:src="@{/js/bootstrap.min.js}"></script>
+    <script th:src="@{/js/bootstrap3.js}"></script>
     <!-- 富文本编辑器 -->
     <link th:href="@{/css/summernote.css}" rel="stylesheet"/>
     <script th:src="@{/js/summernote.js}"></script>
 
-</head>
+
 <body>
 <h3 th:text="${someAttr}"></h3>
 <button id="saveContent" class="btn">save change</button>
