@@ -51,7 +51,7 @@ public class AuthorizeAspect {
 		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 		HttpServletRequest req = attr.getRequest();
 		//检查 cookie，判断是否登录
-		checkCookie(req, TOKEN);
+		//checkCookie(req, TOKEN);
 	}
 	private boolean checkCookie(HttpServletRequest req, String name) {
 		ResultVO result = commonService.checkCookieIfAvailable(req, TOKEN);

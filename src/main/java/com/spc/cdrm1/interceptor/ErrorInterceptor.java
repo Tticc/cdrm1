@@ -15,7 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 
 @Component
 @Slf4j
-public class ErrorInterceptor implements ErrorPageRegistrar {@Override
+public class ErrorInterceptor implements ErrorPageRegistrar {
+	@Override
 	public void registerErrorPages(ErrorPageRegistry registry) {
 		ErrorPage e404 = new ErrorPage(HttpStatus.NOT_FOUND, "/login/404_notfound");//跳转到index
 		//ErrorPage e500 = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/vue/get/2");//跳转到index

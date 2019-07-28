@@ -7,7 +7,16 @@ import org.junit.Test;
 @SuppressWarnings("unused")
 public class CommonTest {
 	
-	
+	@Test
+	public void testSb() {
+		StringBuffer sbBuffer = new StringBuffer();
+		sbBuffer.replace(0, sbBuffer.length(), "123456789");
+		System.out.println(sbBuffer.toString());
+		sbBuffer.replace(0, sbBuffer.length(), "1234");
+		System.out.println(sbBuffer.toString());
+		sbBuffer.replace(0, sbBuffer.length(), "123456789abcdefghij");
+		System.out.println(sbBuffer.toString());
+	}
 	@Test
 	public void testArraysAdd() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 		Class.forName("com.spc.cdrm1.CommonTest").newInstance();

@@ -1,12 +1,14 @@
 package com.spc.cdrm1.controller;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import com.spc.cdrm1.service.ProductService;
 import com.spc.cdrm1.util.CookieUtil;
@@ -14,11 +16,9 @@ import com.spc.cdrm1.util.ResultVOUtil;
 import com.spc.cdrm1.util.redisUtil.RedisUtil_Value;
 import com.spc.cdrm1.vo.ResultVO;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 
-@Api(tags ="测试api")
-@RestController
+
+@Controller
 @RequestMapping("/test")
 public class TestController {
 	
@@ -41,10 +41,14 @@ public class TestController {
 		return ResultVOUtil.success();
 	}*/
 
-	@ApiOperation(value="测试swagger",nickname="chad")
-	@GetMapping("/")
-	public ResultVO testswagger() {
-		return ResultVOUtil.success();
+//	@GetMapping("/")
+//	public String testswagger(HttpServletRequest request) {
+//		return "index";
+//	}
+	
+	@GetMapping("/{path}")
+	public String getPath(HttpServletRequest request,@PathVariable String path) {
+		return path;
 	}
 
 }
