@@ -34,7 +34,7 @@
 	$(document).ready(function() {
 		//启动富文本编辑器
         $('#summernote').summernote();
-        setInterval(syncContent,2000);
+        setInterval(syncContent,5000);
     });
     $(document).on("click","#getContent",function(){
     	var markupStr = $('#summernote').summernote('code');
