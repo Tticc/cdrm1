@@ -19,7 +19,8 @@
 </head>
 <body>
 <h3 th:text="${someAttr}"></h3>
-<button id="getContent" class="btn">click it</button>
+<button id="saveContent" class="btn">save change</button>
+<button id="getContent" class="btn">get data</button>
 <div class="ibox-content no-padding">
 	<div id="summernote" class="summernote"></div>
 </div>
@@ -34,11 +35,12 @@
 	$(document).ready(function() {
 		//启动富文本编辑器
         $('#summernote').summernote();
-        setInterval(syncContent,5000);
+        //setInterval(syncContent,5000);
+    });
+    $(document).on("click","#saveContent",function(){
+    	updateContent();
     });
     $(document).on("click","#getContent",function(){
-    	var markupStr = $('#summernote').summernote('code');
-    	console.log(markupStr);
     	syncContent();
     });
     $(document).keyup(function(event){
