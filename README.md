@@ -53,6 +53,7 @@ git push -u origin master
 # ？？？  
 get load find  
 
-spring 事务
-mysql 事务
-hibernate 事务
+spring 事务  
+mysql 事务  
+hibernate 事务  
+http://www.yq1012.com/ThinkingInJava/  

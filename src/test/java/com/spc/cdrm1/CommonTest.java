@@ -1,5 +1,10 @@
 package com.spc.cdrm1;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
@@ -7,6 +12,21 @@ import org.junit.Test;
 @SuppressWarnings("unused")
 public class CommonTest {
 	
+	@Test
+	public void test_BigInteger() {
+		BigInteger bigInteger = new BigInteger("999999999999999999999999999999910001");
+		System.out.println(bigInteger);
+		BigDecimal bigDecimal = new BigDecimal("1232123.23213");
+		System.out.println(bigDecimal);
+		float[] in = new float[11];
+		System.out.println(in[3]);
+		
+		List<String> list = Arrays.asList("a","b","c");
+		//list.add("d");
+		//list.remove("b");
+		list.clear();
+		System.out.println(list);
+	}
 	@Test
 	public void testSb() {
 		StringBuffer sbBuffer = new StringBuffer();
