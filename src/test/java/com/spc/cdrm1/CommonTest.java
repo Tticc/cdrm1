@@ -117,5 +117,20 @@ class Sub extends Super{
 
 	
 }
-
+interface Innt{
+	/**
+	 * 接口定义不抛出异常，那么实现类的实现方法也不能抛出异常，必需将异常捕捉。
+	 */
+	public void runn();
+}
+class SubInnt implements Innt{
+	@Override
+	public void runn() {
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {}
+		
+	}
+	
+}
 
