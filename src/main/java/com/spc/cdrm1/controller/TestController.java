@@ -50,7 +50,7 @@ public class TestController {
 	 * Callable，有返回数据，可以在try中获取数据。可以声明异常
 	 * <p>{@code f.get()}声明了两个异常，所以需要try</p>
 	 */
-	public void testSubmit() {
+	private void testSubmit() {
 		Future<Object> f = threadPool.submit(new Callable<Object>() {
 			@Override
 			public Object call() throws InterruptedException{
@@ -71,7 +71,7 @@ public class TestController {
 	}
 	//submit(Runnable task, T result);
 	//Runnable作为入参，result是一个方法setReturn
-	public void testSubmit2() {
+	private void testSubmit2() {
 		Future<Object> f = threadPool.submit(new Runnable() {
 			@Override
 			public void run(){
@@ -89,14 +89,14 @@ public class TestController {
 			System.out.println(res);
 		}catch(Exception e) {}
 	}
-	public String setReturn() {
+	private String setReturn() {
 		String aa = "return String";
 		System.out.println(aa);
 		return aa;
 	}
 
 	//execute
-	public void testExecute() {
+	private void testExecute() {
 		threadPool.execute(new Runnable() {
 			@Override
 			public void run() {
