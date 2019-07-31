@@ -5,6 +5,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
@@ -13,8 +16,18 @@ import org.junit.Test;
 public class CommonTest {
 	
 	@Test
-	public void testSync() {
-		System.out.println(6|5);
+	public void testSync() throws InterruptedException, ExecutionException {
+//		FutureTask ft = new FutureTask(new Callable() {
+//
+//			@Override
+//			public Object call() throws Exception {
+//				// TODO Auto-generated method stub
+//				return null;
+//			}
+//			
+//		});
+//		new Thread(ft).start();
+//		ft.get();
 	}
 	
 	@Test

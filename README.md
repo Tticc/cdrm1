@@ -59,11 +59,9 @@ hibernate 事务
 http://www.yq1012.com/ThinkingInJava/  
 
 ##### 线程池 Future 是怎么实现线程之间的交互的？  
-`FutureTask implements RunnableFuture`. 而 `RunnableFuture extends Runnable,Future`  
-```  
-FutureTask ft = new FutureTask(Runnable/Callable);  
-new Thread(ft).start();  
-```   
+`FutureTask implements RunnableFuture`. 而 `RunnableFuture extends Runnable,Future`   
+启动线程 
+`FutureTask ft = new FutureTask(Runnable/Callable);  new Thread(ft).start();  `  
 时，jvm新开线程，**执行FutureTask的run方法**接下来才是最重要的：  
 而通过`FutureTask(Runnable/Callable)`构造出来的FutureTask，最终都会转为`FutureTask(Callable)`，在FutureTask的run方法中会执行Callable的`call()`并设置`call()`的返回值`set(result);`。而FutureTask的句柄`ft`保存在主线程中，所以我们能在主线程中通过`ft.get();`方法拿到`result`。当然在get方法中会判断当前的状态，或阻塞等待或直接返回。get方法也能传参，用来空值get等待时间`V get(long timeout, TimeUnit unit)`  
 所以，Future实现线程通信的方式就是操作线程共享内存的区域的变量。
@@ -72,6 +70,25 @@ new Thread(ft).start();
 还不清楚  
 ##### Thread.start()发生了什么？  
 调用native方法，jvm会开启新线程并定位、执行`Runnable.run`方法
+##### 线程池是怎么循环地取任务队列任务呢？  
+在线程池`ThreadPoolExecutor`中，有个`runWorker`方法。这个方法通过`while (task != null || (task = getTask()) != null) {`循环获取任务队列的任务，并执行其中的run方法。  
+  
+而这个**runWorker**是在任务提交execute -> addWorker 时被调用。  
+在addWorker中，会创建一个新的ThreadPoolExecutor.Worker(Worker implements Runnable):`w = new Worker(firstTask);`，并将这个worker保存在线程池中。所以实际上，线程池中保存的是Worker——一个线程和Runnable任务的打包，这点可以从Worker中两个实例变量可以看出来`final Thread thread;Runnable firstTask;`。而worker创建的时候，就已经将Worker作为Runnable附加到了`final Thread thread`线程中：
+```  
+Worker(Runnable firstTask) {
+	setState(-1); // inhibit interrupts until runWorker
+    this.firstTask = firstTask;
+    this.thread = getThreadFactory().newThread(this);
+}
+```  
+在`final Thread thread`线程start的时候，就会执行worker的run方法，然后调用`ThreadPoolExecutor`的**runWorker**  
+以上就是线程池循环获取任务的过程。  
+
+
+
+
+
 
 
 
