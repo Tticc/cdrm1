@@ -58,10 +58,17 @@ mysql 事务
 hibernate 事务  
 http://www.yq1012.com/ThinkingInJava/  
 
-线程池 Future 是怎么实现线程之间的交互的？  
-FutureTask 在设置返回值时为什么需要cas？  
+##### 线程池 Future 是怎么实现线程之间的交互的？  
+`FutureTask implements RunnableFuture`. 而 `RunnableFuture extends Runnable,Future`  
+```FutureTask ft = new FutureTask(Runnable/Callable);  
+new Thread(ft).start();```时，jvm新开线程，**执行FutureTask的run方法**接下来才是最重要的：  
+而通过`FutureTask(Runnable/Callable)`构造出来的FutureTask，最终都会转为`FutureTask(Callable)`，在FutureTask的run方法中会执行Callable的`call()`并设置`call()`的返回值`set(result);`。而FutureTask的句柄`ft`保存在主线程中，所以我们能在主线程中通过`ft.get();`方法拿到`result`。当然在get方法中会判断当前的状态，或阻塞等待或直接返回。get方法也能传参，用来空值get等待时间`V get(long timeout, TimeUnit unit)`  
+所以，Future实现线程通信的方式就是操作线程共享内存的区域的变量。
 
-
+##### FutureTask 在设置返回值set(result);时为什么需要cas？  
+还不清楚  
+##### Thread.start()发生了什么？  
+调用native方法，jvm会开启新线程并定位、执行`Runnable.run`方法
 
 
 

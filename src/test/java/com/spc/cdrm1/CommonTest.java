@@ -13,6 +13,11 @@ import org.junit.Test;
 public class CommonTest {
 	
 	@Test
+	public void testSync() {
+		System.out.println(6|5);
+	}
+	
+	@Test
 	public void test_BigInteger() {
 		BigInteger bigInteger = new BigInteger("999999999999999999999999999999910001");
 		System.out.println(bigInteger);
@@ -109,13 +114,17 @@ class Super{
 	Super(String name){}
 }
 class Sub extends Super{
+	//父类没有无参构造器，子类构造器必须要调用父类的有参构造器。
+	Sub(){super("default");}
+	Sub(String name) {super(name);}
+	static synchronized String test_sync(){
+		try {
+			Thread.sleep(5000);
 
-	Sub(String name) {
-		super(name);
-		// TODO Auto-generated constructor stub
+			return "helloooo";
+		} catch (InterruptedException e) {}
+		return "exception throwed";
 	}
-
-	
 }
 interface Innt{
 	/**

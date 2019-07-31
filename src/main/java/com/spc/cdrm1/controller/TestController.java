@@ -3,6 +3,7 @@ package com.spc.cdrm1.controller;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -63,7 +64,7 @@ public class TestController {
 			//do many thing here;
 			Thread.sleep(4000);
 			//do many thing here;
-			String res = String.valueOf(f.get());
+			String res = String.valueOf(f.get(5,TimeUnit.SECONDS));
 			System.out.println(res);
 		}catch(Exception e) {
 			e.printStackTrace();
