@@ -57,12 +57,3 @@ spring 事务
 mysql 事务  
 hibernate 事务  
 http://www.yq1012.com/ThinkingInJava/  
-
-线程池 Future 是怎么实现线程之间的交互的？  
-FutureTask 在设置返回值时为什么需要cas？  
-
-
-
-
-
-
