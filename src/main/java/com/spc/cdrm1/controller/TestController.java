@@ -50,7 +50,7 @@ public class TestController {
 	 * Callable，有返回数据，可以在try中获取数据。可以声明异常
 	 * <p>{@code f.get()}声明了两个异常，所以需要try</p>
 	 */
-	public void testSubmit() {
+	protected void testSubmit() {
 		Future<Object> f = threadPool.submit(new Callable<Object>() {
 			@Override
 			public Object call() throws InterruptedException{
