@@ -1,8 +1,10 @@
 package com.spc.cdrm1.controller;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.spc.cdrm1.service.ProductService;
+import com.spc.cdrm1.util.CommonUtil;
 import com.spc.cdrm1.util.CookieUtil;
 import com.spc.cdrm1.util.ResultVOUtil;
 import com.spc.cdrm1.util.redisUtil.RedisUtil_Value;
@@ -39,10 +42,23 @@ public class TestController {
 	private ProductService productService;
 	@Resource
 	private ExecutorService threadPool;
+	@Resource
+	private ScheduledExecutorService scheduleThreadPool;
 
+	
+	@GetMapping("/spool")
+	public void testScheduleThreadPool() throws InterruptedException, ExecutionException {
+		Future<String> f = scheduleThreadPool.schedule(() -> {return "jooo";}, 8, TimeUnit.SECONDS);
+		scheduleThreadPool.scheduleAtFixedRate(()->System.out.println(("schedule:"+ CommonUtil.getDateString())), 3, 5, TimeUnit.SECONDS);
+		System.out.println(f.get());
+		System.out.println(scheduleThreadPool.toString());
+	}
+	
+	
+	
 	@GetMapping("/pool")
 	public void testThreadPool() {
-		testExecute();
+		testExecute2();
 		testSubmit();
 		testSubmit2();
 		System.out.println(threadPool.toString());
@@ -64,7 +80,8 @@ public class TestController {
 			//do many thing here;
 			Thread.sleep(4000);
 			//do many thing here;
-			String res = String.valueOf(f.get(5,TimeUnit.SECONDS));
+			//String res = String.valueOf(f.get(5,TimeUnit.SECONDS));
+			String res = String.valueOf(f.get());
 			System.out.println(res);
 		}catch(Exception e) {
 			e.printStackTrace();
@@ -106,6 +123,15 @@ public class TestController {
 					System.out.println("thread was done");
 				} catch (InterruptedException e) {}
 			}
+		});
+	}
+	//execute2
+	private void testExecute2() {
+		threadPool.execute(() -> {
+			try {
+				Thread.sleep(3000);
+				System.out.println("thread was done");
+			} catch (InterruptedException e) {}
 		});
 	}
 

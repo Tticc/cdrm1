@@ -17,15 +17,20 @@
 
 
 <body>
-<h3 th:text="${someAttr}"></h3>
-<button id="saveContent" class="btn">save change</button>
-<button id="getContent" class="btn">get data</button>
-<div class="ibox-content no-padding">
-	<div id="summernote" class="summernote"></div>
+<hr>
+<div>
+	<h3  style="display:none" th:text="${someAttr}"></h3>
+	<h3>Data Transfor</h3>
+	<button id="saveContent" class="btn">save change</button>
+	<button id="getContent" class="btn">get data</button>
+	<div class="ibox-content no-padding">
+		<div id="summernote" class="summernote"></div>
+	</div>
 </div>
 <!-- 用来存储未修改前的内容 -->
  <!-- style="display:none" -->
 <div id="oriContent"></div>
+
 </body>
 </html>
 
@@ -34,6 +39,7 @@
 	$(document).ready(function() {
 		//启动富文本编辑器
         $('#summernote').summernote();
+        syncContent();
         //setInterval(syncContent,5000);
     });
     $(document).on("click","#saveContent",function(){

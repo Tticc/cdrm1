@@ -22,7 +22,7 @@ public class RedisUtil_Value {
     public static final String KEY_PREFIX_VALUE = "cdrm::redis::first::";
     
     /**
-     * 存入缓存
+     * 存入缓存，默认不过期
      * @author Wen, Changying
      * @param k
      * @param v

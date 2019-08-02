@@ -8,12 +8,23 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class CommonTest {
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void test_Function() {
+		new ArrayList().stream().sorted().forEach((e) -> System.out.println("jdios"));
+	}
+	
+//	private <T, R> R test_fun(Function<? extends T, ? extends R> f) {
+//		//return (T t) -> f.apply(t);
+//	}
 	
 	@Test
 	public void testSync() throws InterruptedException, ExecutionException {

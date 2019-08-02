@@ -5,6 +5,7 @@ redis
 jpa  
 mysql 8.x + oracle  
 swagger  
+多数据源配置失败  
 
 
 ## oracle jdbc包安装方式  
