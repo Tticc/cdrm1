@@ -18,7 +18,10 @@ import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class CommonTest {
+
 	
+	@Test
+	public void test_push() {}
 	@Test
 	public void test_hass() {
 		HashMap<String, String> hashMap = new HashMap<String, String>();
