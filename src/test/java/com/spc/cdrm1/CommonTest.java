@@ -22,6 +22,11 @@ public class CommonTest {
 		new ArrayList().stream().sorted().forEach((e) -> System.out.println("jdios"));
 	}
 	
+	@Test
+	public void test_key() {
+		new Sub().priKey();
+	}
+	
 //	private <T, R> R test_fun(Function<? extends T, ? extends R> f) {
 //		//return (T t) -> f.apply(t);
 //	}
@@ -134,11 +139,16 @@ public class CommonTest {
 		System.out.println("main thread end");
 	}
 }
-class Super{
+abstract class Super{
+	private String Key_user = "key super";
 	Super(String name){}
+	void priKey() {
+		System.out.println(this.Key_user);
+	}
 }
 class Sub extends Super{
 	//父类没有无参构造器，子类构造器必须要调用父类的有参构造器。
+	String Key_user = "sub key 1";
 	Sub(){super("default");}
 	Sub(String name) {super(name);}
 	static synchronized String test_sync(){
