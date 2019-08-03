@@ -21,7 +21,9 @@ public class CommonTest {
 
 	
 	@Test
-	public void test_push() {}
+	public void test_push() {
+		System.out.println("nnnn");
+	}
 	@Test
 	public void test_hass() {
 		HashMap<String, String> hashMap = new HashMap<String, String>();
