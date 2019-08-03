@@ -37,12 +37,20 @@ sudo service mysql start
 
 ## Linux命令  
 ### 查找和杀进程  
+# 查找进程PID
 ps -aux | grep eclipse  
 ps -ef | grep eclipse  
-直接查出PID  
-pgrep eclipse  
-强制杀死进程  
-kill -s 9 PID  
+pgrep eclipse  # 直接查出PID  
+kill -s 9 PID  # 强制杀死进程  
+### 查找端口
+netstat -lntup  # 查找所有端口  
+lsof -i:8090  # 查看端口详细信息  
+
+### 查看log
+cat -n redis.conf | grep pass| more  # -n 打印行号  
+sed -n "500,520p" redis.conf  # 查看 [500,520] 行内容  
+cat -n redis.conf | tail -n +500 | head -n 20  # 查看
+
 
 # git
 git rm -r dir

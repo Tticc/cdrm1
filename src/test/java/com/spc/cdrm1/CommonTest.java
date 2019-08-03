@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -15,6 +18,22 @@ import org.junit.Test;
 
 @SuppressWarnings("unused")
 public class CommonTest {
+	
+	@Test
+	public void test_hass() {
+		HashMap<String, String> hashMap = new HashMap<String, String>();
+		hashMap.put("aa", "aaa");
+		hashMap.get("kk");
+		"abc".hashCode();
+		Map<String, Object> treeMap = new TreeMap<String, Object>();
+		for(int i = 528 ; i < 568; i++) {
+			//System.out.println(5&i);
+		}
+		treeMap.put("null", null);
+		System.out.println(treeMap.get("null"));
+//		Comparable k = (Comparable) "abc";
+//		System.out.println(k.compareTo(null));
+	}
 	
 	@SuppressWarnings("unchecked")
 	@Test
@@ -155,6 +174,7 @@ interface Innt{
 	 * 接口定义不抛出异常，那么实现类的实现方法也不能抛出异常，必需将异常捕捉。
 	 */
 	public void runn();
+	//final void tt();
 }
 class SubInnt implements Innt{
 	@Override
