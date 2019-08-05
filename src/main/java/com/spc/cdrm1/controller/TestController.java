@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -19,6 +20,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.spc.cdrm1.rpcDemo.RpcFramework;
+import com.spc.cdrm1.rpcDemo.RpcService;
 import com.spc.cdrm1.service.ProductService;
 import com.spc.cdrm1.util.CommonUtil;
 import com.spc.cdrm1.util.CookieUtil;
@@ -43,9 +46,51 @@ public class TestController {
 	@Resource
 	private ExecutorService threadPool;
 	@Resource
+	private RpcFramework rpcFramework;
+	@Resource
 	private ScheduledExecutorService scheduleThreadPool;
 
+	/**
+	 * Rpc 测试
+	 * Rpc服务会在app启动时开启。{@link com.spc.cdrm1.rpcDemo.StartRPCWhenAppBoot}
+	 * @param name
+	 * @return
+	 * @throws Exception
+	 * Aug 4, 2019
+	 * @author cv
+	 */
+	@GetMapping("/hello/{name}")
+	public ResultVO testRpc(@PathVariable String name) throws Exception {
+		RpcService service = rpcFramework.call(RpcService.class, "127.0.0.1", 8080);
+		Future<Object> f = threadPool.submit(new Callable<Object>() {
+			@Override
+			public Object call() throws Exception {
+				//Thread.sleep(3000);
+				return (service.sayHello(name));
+			}
+		});
+		return ResultVOUtil.success(f.get());
+		//FutureTask
+//		FutureTask<Object> f = new FutureTask<Object>(new Callable<Object>() {
+//			@Override
+//			public Object call() throws Exception {
+//				//Thread.sleep(3000);
+//				return (service.sayHello(name));
+//			}
+//		});
+//		new Thread(f).start();
+//		return ResultVOUtil.success(f.get());
+		
+
+	}
 	
+	/**
+	 * 定时器线程池测试
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * Aug 4, 2019
+	 * @author cv
+	 */
 	@GetMapping("/spool")
 	public void testScheduleThreadPool() throws InterruptedException, ExecutionException {
 		Future<String> f = scheduleThreadPool.schedule(() -> {return "jooo";}, 8, TimeUnit.SECONDS);
@@ -55,7 +100,11 @@ public class TestController {
 	}
 	
 	
-	
+	/**
+	 * 线程池测试
+	 * Aug 4, 2019
+	 * @author cv
+	 */
 	@GetMapping("/pool")
 	public void testThreadPool() {
 		testExecute2();

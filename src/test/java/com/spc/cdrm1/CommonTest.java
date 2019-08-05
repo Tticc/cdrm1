@@ -16,13 +16,32 @@ import java.util.regex.Pattern;
 
 import org.junit.Test;
 
+import net.bytebuddy.description.field.FieldDescription.InGenericShape;
+
 @SuppressWarnings("unused")
 public class CommonTest {
 
 	
 	@Test
 	public void test_push() {
-		System.out.println("nnnn");
+		Integer i1 = new Integer(9);
+		Integer i2 = new Integer(9);
+		System.out.println(i1==i2);
+		System.out.println(i1.equals(i2));
+
+		int i3 = new Integer(14);
+		int i4 = new Integer(14);
+		System.out.println(i3 == i4);
+		//System.out.println(i3.equals(i4));
+		
+		Integer i5 = new Integer(16);
+		Integer i6 = new Integer(16);
+		System.out.println(i5==i6);
+		System.out.println(i5.equals(i6));
+		
+	    Integer a = 128;
+	    Integer b = 128;
+	    System.out.println(a == b);
 	}
 	@Test
 	public void test_hass() {
@@ -169,6 +188,9 @@ abstract class Super{
 	void priKey() {
 		System.out.println(this.Key_user);
 	}
+	protected void name() {
+		System.out.println("super Name");
+	}
 }
 class Sub extends Super{
 	//父类没有无参构造器，子类构造器必须要调用父类的有参构造器。
@@ -183,6 +205,11 @@ class Sub extends Super{
 		} catch (InterruptedException e) {}
 		return "exception throwed";
 	}
+
+	@Override
+	public void name() {
+		super.name();
+	}
 }
 interface Innt{
 	/**
@@ -190,6 +217,15 @@ interface Innt{
 	 */
 	public void runn();
 	//final void tt();
+	default void runnnn() {
+		
+	}
+	default void vun3() {
+		
+	}
+	static void namenn() {
+		System.out.println("interface");
+	}
 }
 class SubInnt implements Innt{
 	@Override
