@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.function.Function;
@@ -17,11 +18,35 @@ import java.util.regex.Pattern;
 import org.junit.Test;
 
 import net.bytebuddy.description.field.FieldDescription.InGenericShape;
-
+/**
+ * <ol>
+ * <li>测试 ConcurrentHashMap</li>
+ * <li>测试 Integer 和 int 的打包解包转换和存储位置</li>
+ * <li>测试 hashcode</li>
+ * <li>测试父类，子类变量</li>
+ * <li>测试 FutureTask线程回调</li>
+ * <li>测试java大数字</li>
+ * <li>测试StringBuffer的完全替换</li>
+ * <li>测试 Type和Class</li>
+ * <li>测试对象类型数组的初始化</li>
+ * <li>测试break point，未测出来</li>
+ * <li>线程的 run 和 start</li>
+ * <li>抽象类测试</li>
+ * <li>Interface 测试</li>
+ * </ol>
+ * Aug 6, 2019
+ */
 @SuppressWarnings("unused")
 public class CommonTest {
 
-	
+	// 测试 ConcurrentHashMap 2019-08-06
+	@Test
+	public void test_ConcurrentMap() {
+		int HASH_BITS = 0x7fffffff;
+		System.out.println(1&HASH_BITS);
+		Map<String, String> chm = new ConcurrentHashMap<String, String>();
+	}
+	//测试 Integer 和 int 的打包解包转换和存储位置
 	@Test
 	public void test_push() {
 		Integer i1 = new Integer(9);
@@ -43,6 +68,7 @@ public class CommonTest {
 	    Integer b = 128;
 	    System.out.println(a == b);
 	}
+	// 测试 hashcode
 	@Test
 	public void test_hass() {
 		HashMap<String, String> hashMap = new HashMap<String, String>();
@@ -59,21 +85,17 @@ public class CommonTest {
 //		System.out.println(k.compareTo(null));
 	}
 	
-	@SuppressWarnings("unchecked")
+	// 测试父类，子类变量
 	@Test
-	public void test_Function() {
-		new ArrayList().stream().sorted().forEach((e) -> System.out.println("jdios"));
-	}
-	
-	@Test
-	public void test_key() {
+	public void test_super_sub_key() {
 		new Sub().priKey();
 	}
-	
+	// 测试function，失败！
 //	private <T, R> R test_fun(Function<? extends T, ? extends R> f) {
 //		//return (T t) -> f.apply(t);
 //	}
 	
+	// 测试 FutureTask线程回调
 	@Test
 	public void testSync() throws InterruptedException, ExecutionException {
 //		FutureTask ft = new FutureTask(new Callable() {
@@ -89,6 +111,7 @@ public class CommonTest {
 //		ft.get();
 	}
 	
+	// 测试java大数字
 	@Test
 	public void test_BigInteger() {
 		BigInteger bigInteger = new BigInteger("999999999999999999999999999999910001");
@@ -104,6 +127,7 @@ public class CommonTest {
 		list.clear();
 		System.out.println(list);
 	}
+	// 测试StringBuffer的完全替换
 	@Test
 	public void testSb() {
 		StringBuffer sbBuffer = new StringBuffer();
@@ -114,41 +138,34 @@ public class CommonTest {
 		sbBuffer.replace(0, sbBuffer.length(), "123456789abcdefghij");
 		System.out.println(sbBuffer.toString());
 	}
-	@Test
-	public void testArraysAdd() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-		Class.forName("com.spc.cdrm1.CommonTest").newInstance();
-	}
+	// 测试 Type和Class
 	@Test
 	public void test_typeAndClass(){
 		System.out.println(Long.TYPE);
 		System.out.println(long.class);
 		System.out.println(Long.class);
 	}
+	// 测试对象类型数组的初始化
 	@Test
 	public void tetArray() {
 		Integer[] str = new Integer[10];
 		System.out.println(str[5]);
 	}
 	
+	// 测试break point，未测出来
 	@Test
 	public void testBreak() {
+		breakPoint:
 		for(int j = 0; j < 2; j ++) {
-		for(int i = 0; i < 10; i++) {
-			if(i>5) {
-				break;
+			for(int i = 0; i < 10; i++) {
+				if(i>5) {
+					break;
+				}
+				System.out.println(i);
 			}
-			System.out.println(i);
 		}
-		}
+		System.out.println("end");
 	}
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	/**
@@ -182,15 +199,22 @@ public class CommonTest {
 		System.out.println("main thread end");
 	}
 }
+/**
+ * 抽象类测试
+ * Aug 6, 2019
+ */
 abstract class Super{
 	private String Key_user = "key super";
 	Super(String name){}
 	void priKey() {
-		System.out.println(this.Key_user);
+		System.out.println(this.Key_user);//输出的是 key super，而不是子类的key sub 1
 	}
-	protected void name() {
+	// protected方法可以被子类继承，并且能够在子类中重写并扩展访问级别
+	protected void protectedFunc() {
 		System.out.println("super Name");
 	}
+	// 私有方法不会被子类继承
+	private void privateFunc() {}
 }
 class Sub extends Super{
 	//父类没有无参构造器，子类构造器必须要调用父类的有参构造器。
@@ -207,10 +231,15 @@ class Sub extends Super{
 	}
 
 	@Override
-	public void name() {
-		super.name();
+	public void protectedFunc() {
+		super.protectedFunc();
 	}
 }
+
+/**
+ * Interface 测试
+ * Aug 6, 2019
+ */
 interface Innt{
 	/**
 	 * 接口定义不抛出异常，那么实现类的实现方法也不能抛出异常，必需将异常捕捉。

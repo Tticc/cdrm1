@@ -4,11 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * 测试生产者消费者的过度生产、消费，死锁
+ * @author cv
+ * Aug 6, 2019
+ */
 public class DoSomething {
     private Buffer mBuf = new Buffer();
 
     public void produce() {
         synchronized (this) {
+        	// while，而不是if，如果使用if，那么可能在mBuf为full的情况下执行add，造成过度生产
         	while (mBuf.isFull()) {
                 try {
                     wait();
@@ -17,12 +23,15 @@ public class DoSomething {
                 }
             }
             mBuf.add();
-            notify();
+            // 使用notifyAll而不是notify，使用notify在多个生产者的情况下可能造成死锁
+            //notify();
+            notifyAll();
         }
     }
 
     public void consume() {
         synchronized (this) {
+        	// while，而不是if，如果使用if，那么可能在mBuf为空的情况下执行remove，造成过度消费
             while (mBuf.isEmpty()) {
                 try {
                     wait();
@@ -31,7 +40,9 @@ public class DoSomething {
                 }
             }
             mBuf.remove();
-            notify();
+            // 使用notifyAll而不是notify，使用notify在多个消费者的情况下可能造成死锁
+            //notify();
+            notifyAll();
         }
     }
 
