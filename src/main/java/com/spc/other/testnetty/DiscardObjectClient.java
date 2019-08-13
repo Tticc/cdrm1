@@ -1,6 +1,10 @@
 package com.spc.other.testnetty;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+
 import com.spc.cdrm1.util.ResultVOUtil;
+import com.spc.other.rpcAnetty.MyFutureTask;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -19,10 +23,14 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 public class DiscardObjectClient {
 
 	public static void main(String[] args) throws Exception {
-		DiscardObjectClient dc = new DiscardObjectClient();
-		dc.connect("127.0.0.1", 8000);
+		//DiscardObjectClient dc = new DiscardObjectClient();
+		//dc.connect("127.0.0.1", 8000);
+		MyFutureTask<String> f = new MyFutureTask<String>();
+		f.set("result");
+		System.out.println(f.get());
+		
 	}
-	public void connect(String host, int port) throws Exception {
+	public void connect(String host, int port, FutureTask<String> f) throws Exception {
 		EventLoopGroup worker = new NioEventLoopGroup();
 		try {
 			Bootstrap b = new Bootstrap();

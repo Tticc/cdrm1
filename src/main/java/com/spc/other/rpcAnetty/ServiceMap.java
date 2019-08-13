@@ -12,11 +12,7 @@ public class ServiceMap {
 	public static Map<String, Method> serviceMap;
 
 	public static void main(String[] args) {
-		JSONObject obj =  (JSONObject) JSONObject.toJSON(new TestEntity());
-		String objStr = obj.toString();
-		System.out.println(objStr);
-		obj = (JSONObject) JSONObject.parse(objStr);
-		System.out.println(obj);
+		
 	}
 	/**
 	 * 类加载时初始化serviceMap
