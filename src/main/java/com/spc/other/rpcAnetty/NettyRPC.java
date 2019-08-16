@@ -35,6 +35,10 @@ import io.netty.handler.codec.string.StringEncoder;
 
 @SuppressWarnings("unchecked")
 public class NettyRPC {
+	public static void main(String[] args) throws Exception {
+		ServiceImpl si = new ServiceImpl();
+		new NettyRPC().provide(si, 8000);
+	}
 
 	public void provide(final Object service, int port) throws Exception {
 		if(service == null) 

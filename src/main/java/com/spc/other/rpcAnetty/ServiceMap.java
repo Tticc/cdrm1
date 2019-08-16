@@ -1,6 +1,7 @@
 package com.spc.other.rpcAnetty;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.activation.MailcapCommandMap;
@@ -9,7 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 
 
 public class ServiceMap {
-	public static Map<String, Method> serviceMap;
+	public static Map<String, Method> serviceMap = new HashMap<String, Method>();
 
 	public static void main(String[] args) {
 		
