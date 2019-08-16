@@ -3,7 +3,8 @@ package com.spc.other.rpcAnetty;
 import com.alibaba.fastjson.JSONObject;
 
 public class TestUnit {
-	public void main(String[] args) throws Exception {
+	public static void main(String[] args) throws Exception {
+		test_myft();
 	}
 	
 	private void test_call() {
@@ -16,9 +17,14 @@ public class TestUnit {
 //		obj = (JSONObject) JSONObject.parse(objStr);
 //		System.out.println(obj);
 	}
-	private void test_myft() throws Exception {
+	private static void test_myft() throws Exception {
 		MyFutureTask<String> f = new MyFutureTask<String>();
-		f.set("result");
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				f.set("result");
+			}
+		}).start();
 		System.out.println(f.get());
 	}
 }
