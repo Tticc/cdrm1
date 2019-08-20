@@ -92,7 +92,8 @@ public class DubboServiceProvider {
 							}catch(Exception e) {
 								result = ResultVOUtil.error(1, e.getMessage());
 							}
-							obj.put("result", result);
+							String rr = JSONObject.toJSON(result).toString();
+							obj.put("result", rr);
 					        ctx.writeAndFlush(obj.toString());
 					    }
 					});
