@@ -71,7 +71,7 @@ public class DubboServiceProvider {
 					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
 						@Override
 					    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-							ResultVO result = null; JSONObject obj = null;
+							ResultVO result = null; JSONObject obj = new JSONObject();
 							try {
 						        System.out.println("input: "+msg.toString());
 						        obj = (JSONObject) JSONObject.parse(msg.toString());
