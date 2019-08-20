@@ -1,18 +1,14 @@
 package com.spc.other.rpcAnetty;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.Proxy;
-import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.spc.cdrm1.util.ResultVOUtil;
-import com.spc.cdrm1.vo.ResultVO;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.bootstrap.ServerBootstrap;
@@ -27,17 +23,71 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 @SuppressWarnings("unchecked")
 public class NettyRPC {
+	private static ExecutorService execFixed = Executors.newFixedThreadPool(2);
 	public static void main(String[] args) throws Exception {
+		System.out.println("main thread:"+Thread.currentThread().getName());
+		//execFixed.execute(new Runnable() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("service thread:"+Thread.currentThread().getName());
+				try {
+					doProvide();
+					Thread.sleep(9000);
+					System.out.println("i will sleep 9000ms");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		System.out.println("service provided");
+		//Thread.sleep(5000);
+//		execFixed.execute(new Runnable() {
+//			@Override
+//			public void run() {
+//				System.out.println("client thread:"+Thread.currentThread().getName());
+//				try {
+//					doCall();
+//					Thread.sleep(5000);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		});
+//		System.out.println("service called");
+		
+	}
+	public static void doProvide() throws Exception {
 		ServiceImpl si = new ServiceImpl();
 		new NettyRPC().provide(si, 8000);
+	}
+	public static void doCall() throws Exception{
+		MyFutureTask<Object> mft = new MyFutureTask<Object>();
+		// 启动一个新线程去调用 call 
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				JSONObject params = new JSONObject();
+				params.put("serviceKey", "sayHello");
+				Map<String,String> map = new HashMap<String, String>();
+				map.put("name", "CChad");
+				params.put("params", map);
+				try {
+					new NettyRPC().call("sayHello",params,"127.0.0.1",8000,mft);
+					//new NettyRPC().call("sayHello",params,"192.168.1.102",8000,mft);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}).start();
+		//Thread.sleep(4000);
+		System.out.println("resultset is:"+mft.get().toString());
 	}
 
 	public void provide(final Object service, int port) throws Exception {
@@ -100,7 +150,19 @@ public class NettyRPC {
 		}
 	}
 	
-	public Object call(String serviceKey,JSONObject params) throws Exception {
+	/**
+	 * 使用netty调用远程服务。<br/>
+	 * 问题是，在生产环境中，使用dubbo
+	 * @author Wen, Changying
+	 * @param serviceKey
+	 * @param params
+	 * @param host
+	 * @param port
+	 * @param mft
+	 * @throws Exception
+	 * @date 2019年8月17日
+	 */
+	public void call(String serviceKey,JSONObject params, String host, int port, MyFutureTask<Object> mft) throws Exception {
 		System.out.println("call service "+serviceKey);
 		EventLoopGroup worker = new NioEventLoopGroup();
 		try {
@@ -112,11 +174,12 @@ public class NettyRPC {
 				@Override
 				protected void initChannel(SocketChannel ch) throws Exception {
 					ch.pipeline().addLast(new StringEncoder());
-					ch.pipeline().addLast(new StringEncoder());
+					ch.pipeline().addLast(new StringDecoder());
 					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
 						@Override
 						public void channelRead(ChannelHandlerContext ctx, Object msg) {
 							System.out.println("result: "+msg.toString());
+							mft.set(msg);
 						}
 						@Override
 						public void channelActive(ChannelHandlerContext ctx) {
@@ -125,9 +188,8 @@ public class NettyRPC {
 					});
 				}
 			});
-			ChannelFuture cf = b.connect("127.0.0.1",8000);
+			ChannelFuture cf = b.connect(host,port);
 			cf.channel().closeFuture().sync();
-			return cf.get();
 		}finally {
 			worker.shutdownGracefully();
 		}

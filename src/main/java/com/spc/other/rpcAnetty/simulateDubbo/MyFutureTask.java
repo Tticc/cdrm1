@@ -1,11 +1,14 @@
-package com.spc.other.rpcAnetty;
+package com.spc.other.rpcAnetty.simulateDubbo;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.LockSupport;
 
 
@@ -16,9 +19,14 @@ import java.util.concurrent.locks.LockSupport;
  * Aug 13, 2019
  */
 public class MyFutureTask<V> {
+	public static void main(String[] args) {
+		// ConcurrentHashMap 不能存 null 的key
+		ConcurrentHashMap<String, String> StrMap = new ConcurrentHashMap<String,String>();
+	}
 
 	private FutureTask<V> f;
-	private static Map<Integer, Thread> waitThreads = new ConcurrentHashMap<Integer, Thread>();
+	// 用来实现 MyFutureTask 的在单例情况下处理多个线程的请求。
+	private static Map<Long, MyWaitNode> waitNodes = new ConcurrentHashMap<Long, MyWaitNode>();
     private volatile int state;
     private static final int NEW          = 0;
     private static final int COMPLETING   = 1;
@@ -41,6 +49,28 @@ public class MyFutureTask<V> {
     public MyFutureTask() {
         this.state = NEW;       // ensure visibility of callable
     }
+
+    /**
+     * 调用该方法，将当前线程放到MyFutureTask的waitNodes map里
+     * @author Wen, Changying
+     * @date 2019年8月19日
+     */
+    public void putMySelf() {
+    	putMyWaitNode(Thread.currentThread().getId(),new MyWaitNode());
+    }
+    /**
+     * 用来实现 MyFutureTask 的在单例情况下处理多个线程的请求。
+     * @author Wen, Changying
+     * @param threadID
+     * @param myWaitNode
+     * @return
+     * @date 2019年8月19日
+     */
+    public boolean putMyWaitNode(long threadID, MyWaitNode myWaitNode) {
+    	// 如果putIfAbsent返回值为null，说明对应的key原来已经有值，返回false
+    	if(null == waitNodes.putIfAbsent(threadID, myWaitNode)) return false;
+    	return true;
+    }
     
     /**
      * 设置返回值，并调用 LockSupport.unpark() 唤醒所有因为调用 get() 而阻塞着的线程<br/>
@@ -50,20 +80,73 @@ public class MyFutureTask<V> {
      * @param v
      * @date 2019年8月15日
      */
-    public void set(V v) {
-//    	try {
-//			Thread.sleep(8000);
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		}
-    	this.outcome = v;
-    	this.state = NORMAL;
-    	while(waiters !=null) {
-    		LockSupport.unpark(waiters.thread);
-    		waiters = waiters.next;
+    public void set(long threadID, V v) {
+    	// set outcome， 然后再set state
+    	MyWaitNode node = waitNodes.get(threadID);
+    	if(node == null) return;
+    	node.outcome = v;
+    	node.state = NORMAL;
+    	while(node.thread != null) {
+    		LockSupport.unpark(node.thread);
+    	}
+    }
+
+	/**
+	 * 线程可能会永远沉睡下去，所以尽量使用有等待时间的另一个myGet
+	 * @author Wen, Changying
+	 * @return
+	 * @throws Exception 
+	 * @date 2019年8月19日
+	 */
+    public V myGet() throws Exception {
+    	MyWaitNode node;
+
+    	long threadID = Thread.currentThread().getId();
+    	if((node = waitNodes.get(threadID)) == null) 
+    		throw new Exception("调用putMySelf设置 MyWaitNode 失败!");
+    	
+    	for(;;) {
+	    	if(node.state > COMPLETING) {
+	        	waitNodes.remove(threadID);
+	    		return (V) node.outcome;
+	    	}
+            LockSupport.park(this);
     	}
     }
     /**
+     * 等待超时抛出异常
+     * @author Wen, Changying
+     * @param timeout
+     * @param unit
+     * @return
+     * @throws TimeoutException, Exception 
+     * @date 2019年8月19日
+     */
+    public V myGet(long timeout, TimeUnit unit) throws TimeoutException, Exception {
+    	if (unit == null)
+            throw new NullPointerException();
+    	MyWaitNode node;
+    	long threadID = Thread.currentThread().getId();
+    	if((node = waitNodes.get(threadID)) == null) 
+    		throw new Exception("调用putMySelf设置 MyWaitNode 失败!");
+    	
+        final long deadline = System.nanoTime() + unit.toNanos(timeout);
+    	for(;;) {
+    		// 如果状态大于COMPLETING，返回
+	    	if(node.state > COMPLETING) {
+	        	waitNodes.remove(threadID);
+	    		return (V) node.outcome;
+	    	}
+	    	// 超时抛异常。
+	    	if(deadline - System.nanoTime() <= 0L) {
+	        	waitNodes.remove(threadID);
+	    		throw new TimeoutException();
+	    	}
+	    	// 等待
+            LockSupport.parkNanos(this, unit.toNanos(timeout));
+    	}
+    }
+	/**
      * FutureTask原有方法
      * @throws CancellationException {@inheritDoc}
      */
@@ -136,6 +219,16 @@ public class MyFutureTask<V> {
         throw new ExecutionException((Throwable)x);
     }
 
+    static final class MyWaitNode{
+    	volatile long ThreadID;
+        volatile Thread thread;
+        volatile Object outcome;
+        volatile int state = NEW;
+        MyWaitNode(){
+        	ThreadID = Thread.currentThread().getId();
+        	thread = Thread.currentThread();
+        }
+    }
     /**
      * FutureTask原有内部类
      * @author Wen, Changying
