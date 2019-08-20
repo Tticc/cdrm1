@@ -32,15 +32,16 @@ public class DubboService {
 		DubboService ds = DubboService.getInstance();
 		JSONObject params = new JSONObject();
 		params.put("name", "Tticc");
-		ResultVO result = (ResultVO) ds.getDubboService("sayHello", params);
+		params = (JSONObject) ds.getDubboService("sayHello", params);
+		System.out.println(params);
 		
 	}
-	private EventLoopGroup worker = new NioEventLoopGroup();
+	
 	private Channel ch;
 	private MyFutureTask<Object> mft = new MyFutureTask<Object>();;
 	private final String HOST = "127.0.0.1";
 	private final int PORT = 8000;
-	private ExecutorService es = Executors.newFixedThreadPool(1);
+	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
 	
 	// 用来保存正在等待返回数据的线程
 	//private static Map<Long, Thread> waitThreads = new ConcurrentHashMap<Long, Thread>();
@@ -53,7 +54,7 @@ public class DubboService {
 	 * </p>
 	 */
 	private DubboService() {
-		es.execute(() -> initClient());
+		threadPool.execute(() -> initClient());
 	}
 	public static final DubboService getInstance() {
 		return SingletonCreater.INSTANCE;
@@ -83,7 +84,8 @@ public class DubboService {
 			requestJson.put("threadID", String.valueOf(threadID));
 			requestJson.put("serviceKey", serviceKey);
 			requestJson.put("params", params);
-			// {thread=21,serviceKey=sayHello,params={name=Chad,...}}
+			// {threadID=21,serviceKey=sayHello,params={name=Chad,...}}
+			// 这里为什么无法写入呢？
 			this.ch.writeAndFlush(requestJson.toString());
 			return ResultVOUtil.success(mft.myGet(60,TimeUnit.SECONDS));
 		}catch(TimeoutException te) {
@@ -97,9 +99,10 @@ public class DubboService {
 	}
 
 	private void initClient() {
+		EventLoopGroup worker = new NioEventLoopGroup();
 		try {
 			Bootstrap b = new Bootstrap();
-			b.group(this.worker);
+			b.group(worker);
 			b.channel(NioSocketChannel.class);
 			b.option(ChannelOption.SO_KEEPALIVE, true);
 			b.handler(new ChannelInitializer<SocketChannel>() {
@@ -113,6 +116,7 @@ public class DubboService {
 							System.out.println("result: "+msg.toString());
 							JSONObject result = (JSONObject) JSONObject.parse(msg.toString());
 							long threadID = result.getLongValue("threadID");
+							System.out.println("**************//////////output"+result);
 							mft.set(threadID, msg);
 						}
 						@Override
@@ -124,12 +128,18 @@ public class DubboService {
 				}
 			}); 
 			this.ch = b.connect(HOST, PORT).sync().channel();
-			this.ch.writeAndFlush("\r\n");
+			JSONObject params = new JSONObject();
+			params.put("name", "Tticc");
+			JSONObject requestJson = new JSONObject();
+			requestJson.put("threadID", 1l);
+			requestJson.put("serviceKey", "sayHello");
+			requestJson.put("params", params);
+			this.ch.writeAndFlush(requestJson.toString());
 			// now send message to server, take Thread ID beyond basic info
 		}catch (InterruptedException e) {
 				e.printStackTrace();
 		}finally {
-			this.worker.shutdownGracefully();
+			worker.shutdownGracefully();
 		}
 	}
 }

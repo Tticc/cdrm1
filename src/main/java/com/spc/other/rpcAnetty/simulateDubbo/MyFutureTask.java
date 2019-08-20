@@ -14,44 +14,48 @@ import java.util.concurrent.locks.LockSupport;
 
 
 /**
- * 模仿futuretask，用来在netty channel外获取channel的返回值
+ * 模仿futuretask，用来在netty channel外获取channel的返回值。供外部调用的方法有3个：{@linkplain MyFutureTask#putMySelf() putMySelf()}、
+ * {@linkplain MyFutureTask#set(long,V) set(long,V)}、{@linkplain MyFutureTask#myGet(long,TimeUnit) myGet(long,TimeUnit)}
+ * 
+ * <p>
+ * 
+ * </p>
  * @author cv
  * Aug 13, 2019
  */
 public class MyFutureTask<V> {
 	public static void main(String[] args) {
+		FutureTask<Object> f;
 		// ConcurrentHashMap 不能存 null 的key
 		ConcurrentHashMap<String, String> StrMap = new ConcurrentHashMap<String,String>();
 	}
 
-	private FutureTask<V> f;
 	// 用来实现 MyFutureTask 的在单例情况下处理多个线程的请求。
 	private static Map<Long, MyWaitNode> waitNodes = new ConcurrentHashMap<Long, MyWaitNode>();
-    private volatile int state;
     private static final int NEW          = 0;
     private static final int COMPLETING   = 1;
     private static final int NORMAL       = 2;
-    private static final int EXCEPTIONAL  = 3;
     private static final int CANCELLED    = 4;
-    private static final int INTERRUPTING = 5;
-    private static final int INTERRUPTED  = 6;
+    
+    // ***************************************** 弃用 **************************************************************
+    private volatile int state;
     /** The result to return or exception to throw from get() */
     private Object outcome; // non-volatile, protected by state reads/writes
-    
     // 保存所有正在等待 get() 返回值的线程。
     /** Treiber stack of waiting threads */
     private volatile WaitNode waiters;
-    
     //暂时没有作用
     /** The thread running the callable; CASed during run() */
     private volatile Thread runner;
+    // ***************************************** 弃用 **************************************************************
     
     public MyFutureTask() {
         this.state = NEW;       // ensure visibility of callable
     }
 
     /**
-     * 调用该方法，将当前线程放到MyFutureTask的waitNodes map里
+     * 调用该方法，将当前线程放到MyFutureTask的waitNodes map里。在netty client调用set是会从这个map
+     * 中找到对于的线程唤醒。
      * @author Wen, Changying
      * @date 2019年8月19日
      */
@@ -59,14 +63,14 @@ public class MyFutureTask<V> {
     	putMyWaitNode(Thread.currentThread().getId(),new MyWaitNode());
     }
     /**
-     * 用来实现 MyFutureTask 的在单例情况下处理多个线程的请求。
+     * 调用 map 的 putIfAbsent 来插入线程。因为线程id不会重复，所以暂时不清楚会有什么坏处。
      * @author Wen, Changying
      * @param threadID
      * @param myWaitNode
      * @return
-     * @date 2019年8月19日
+     * @date 2019年8月20日
      */
-    public boolean putMyWaitNode(long threadID, MyWaitNode myWaitNode) {
+    private boolean putMyWaitNode(long threadID, MyWaitNode myWaitNode) {
     	// 如果putIfAbsent返回值为null，说明对应的key原来已经有值，返回false
     	if(null == waitNodes.putIfAbsent(threadID, myWaitNode)) return false;
     	return true;
@@ -75,7 +79,6 @@ public class MyFutureTask<V> {
     /**
      * 设置返回值，并调用 LockSupport.unpark() 唤醒所有因为调用 get() 而阻塞着的线程<br/>
      * 
-     * TODO  我需要知道当前的set需要唤醒哪一个调用get()的线程!!!!!!!!!
      * @author Wen, Changying
      * @param v
      * @date 2019年8月15日
@@ -92,13 +95,14 @@ public class MyFutureTask<V> {
     }
 
 	/**
-	 * 线程可能会永远沉睡下去，所以尽量使用有等待时间的另一个myGet
+	 * 获取netty的回写数据，数据没有回来时挂起等待。线程可能会永远沉睡下去，所以尽量使用有等待时间的另一个myGet
 	 * @author Wen, Changying
 	 * @return
 	 * @throws Exception 
 	 * @date 2019年8月19日
 	 */
-    public V myGet() throws Exception {
+    @Deprecated
+    private V myGet() throws Exception {
     	MyWaitNode node;
 
     	long threadID = Thread.currentThread().getId();
@@ -114,7 +118,7 @@ public class MyFutureTask<V> {
     	}
     }
     /**
-     * 等待超时抛出异常
+     * 获取netty的回写数据，数据没有回来时挂起等待，等待超时抛出异常
      * @author Wen, Changying
      * @param timeout
      * @param unit
@@ -150,6 +154,7 @@ public class MyFutureTask<V> {
      * FutureTask原有方法
      * @throws CancellationException {@inheritDoc}
      */
+    @Deprecated
     public V get() throws InterruptedException, ExecutionException {
         int s = state;
         if (s <= COMPLETING)
@@ -165,6 +170,7 @@ public class MyFutureTask<V> {
      * @param nanos time to wait, if timed
      * @return state upon completion
      */
+    @Deprecated
     private int awaitDone(boolean timed, long nanos)
         throws InterruptedException {
         final long deadline = timed ? System.nanoTime() + nanos : 0L;
@@ -210,6 +216,7 @@ public class MyFutureTask<V> {
      * @param s completed state value
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     private V report(int s) throws ExecutionException {
         Object x = outcome;
         if (s == NORMAL)
@@ -234,6 +241,7 @@ public class MyFutureTask<V> {
      * @author Wen, Changying
      * 2019年8月15日
      */
+    @Deprecated
     static final class WaitNode {
         volatile Thread thread;
         volatile WaitNode next;

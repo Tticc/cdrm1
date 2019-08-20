@@ -1,10 +1,13 @@
 package com.spc.cdrm1.vo;
 
 import java.io.Serializable;
+
+import com.alibaba.fastjson.JSONObject;
+
 import lombok.Data;
 
 @Data
-public class ResultVO<T> implements Serializable {
+public class ResultVO<T>  extends JSONObject implements Serializable {
 	private static final long serialVersionUID = 9172171625353985099L;
 
 	/**
