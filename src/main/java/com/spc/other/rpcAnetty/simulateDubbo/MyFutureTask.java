@@ -89,7 +89,7 @@ public class MyFutureTask<V> {
     	if(node == null) return;
     	node.outcome = v;
     	node.state = NORMAL;
-    	while(node.thread != null) {
+    	if(node.thread != null) {
     		LockSupport.unpark(node.thread);
     	}
     }
@@ -146,6 +146,7 @@ public class MyFutureTask<V> {
 	        	waitNodes.remove(threadID);
 	    		throw new TimeoutException();
 	    	}
+	    	Thread.yield();
 	    	// 等待
             LockSupport.parkNanos(this, unit.toNanos(timeout));
     	}

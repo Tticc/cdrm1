@@ -1,9 +1,11 @@
 package com.spc.other.testnetty;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import com.spc.cdrm1.util.ResultVOUtil;
+import com.spc.cdrm1.vo.ResultVO;
 import com.spc.other.rpcAnetty.MyFutureTask;
 
 import io.netty.bootstrap.Bootstrap;
@@ -23,11 +25,12 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 public class DiscardObjectClient {
 
 	public static void main(String[] args) throws Exception {
-		//DiscardObjectClient dc = new DiscardObjectClient();
-		//dc.connect("127.0.0.1", 8000);
-		MyFutureTask<String> f = new MyFutureTask<String>();
-		f.set("result");
-		System.out.println(f.get());
+		FutureTask<String> f = null;
+		DiscardObjectClient dc = new DiscardObjectClient();
+		dc.connect("127.0.0.1", 8000, f);
+//		MyFutureTask<String> f = new MyFutureTask<String>();
+//		f.set("result");
+//		System.out.println(f.get());
 		
 	}
 	public void connect(String host, int port, FutureTask<String> f) throws Exception {
@@ -46,10 +49,15 @@ public class DiscardObjectClient {
 					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
 						@Override
 						public void channelRead(ChannelHandlerContext ctx, Object msg) {
-							System.out.println("result: "+msg.toString());
+							System.out.println("result: "+((ResultVO)msg).toString());
+//							System.out.println("result: "+((TransforObject)msg).toString());
 						}
 						@Override
 						public void channelActive(ChannelHandlerContext ctx) {
+//							TransforObject msg = new TransforObject();
+//							msg.setName("hello servvvvvvver");
+//							msg.setData(ResultVOUtil.success());
+//							ctx.writeAndFlush(msg);
 							ctx.writeAndFlush(ResultVOUtil.success());
 						}
 					});

@@ -1,6 +1,9 @@
 package com.spc.other.testnetty;
 
 import java.util.List;
+import java.util.Map;
+
+import com.spc.cdrm1.vo.ResultVO;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
@@ -55,8 +58,13 @@ public class DiscardObjectServer {
 					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
 						@Override
 					    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-					        System.out.println("input: "+msg.toString());
-							ctx.writeAndFlush(msg);
+							ResultVO res = (ResultVO)msg;
+					        System.out.println("input: "+res.toString());
+							ctx.writeAndFlush(res);
+//							TransforObject tf = (TransforObject)msg;
+//					        System.out.println("input: " + tf.toString());
+//							ctx.writeAndFlush(tf);
+							
 					    }
 					});
 				}

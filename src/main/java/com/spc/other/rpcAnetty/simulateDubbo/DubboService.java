@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -24,24 +25,74 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
 public class DubboService {
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
+		// 初始化client。
 		DubboService ds = DubboService.getInstance();
+		Thread.sleep(3000);
+		
+		// 调用 dubbo 服务
+		
 		JSONObject params = new JSONObject();
-		params.put("name", "Tticc");
-		params = (JSONObject) ds.getDubboService("sayHello", params);
-		System.out.println(params);
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("0000000000000000000000000000000");
+				params.put("name", "Tticc");
+				ds.getDubboService("sayHello", params);
+			}
+		}, "Tticc").start();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("11111111111111111111111111111111");
+				params.put("name", "Tticc1");
+				ds.getDubboService("sayHello", params);
+			}
+		},"Tticc1").start();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("22222222222222222222222222222222");
+				params.put("name", "Tticc2");
+				ds.getDubboService("sayHello", params);
+			}
+		}, "Tticc2").start();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("3333333333333333333333333333333");
+				params.put("name", "Tticc3");
+				ds.getDubboService("sayHello", params);
+			}
+		}, "Tticc3").start();
+		
+//		System.out.println("output in main:" + params);
+//		Thread.sleep(4000);
+//		params.put("name", "tticc, please go into");
+//		params = (JSONObject) ds.getDubboService("sayHello", params);
+//		System.out.println("output in main 2:" + params);
+		
 		
 	}
 	
-	private Channel ch;
+	//private Channel ch;
 	private MyFutureTask<Object> mft = new MyFutureTask<Object>();;
 	private final String HOST = "127.0.0.1";
+	//private final String HOST = "192.168.1.103";
 	private final int PORT = 8000;
 	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
+	
+	LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue<String>(1000*1000);
 	
 	// 用来保存正在等待返回数据的线程
 	//private static Map<Long, Thread> waitThreads = new ConcurrentHashMap<Long, Thread>();
@@ -54,7 +105,7 @@ public class DubboService {
 	 * </p>
 	 */
 	private DubboService() {
-		threadPool.execute(() -> initClient());
+		threadPool.execute(() -> initClientO());
 	}
 	public static final DubboService getInstance() {
 		return SingletonCreater.INSTANCE;
@@ -84,9 +135,13 @@ public class DubboService {
 			requestJson.put("threadID", String.valueOf(threadID));
 			requestJson.put("serviceKey", serviceKey);
 			requestJson.put("params", params);
+			System.out.println(lbq.add(requestJson.toString()));
 			// {threadID=21,serviceKey=sayHello,params={name=Chad,...}}
 			// 这里为什么无法写入呢？
-			this.ch.writeAndFlush(requestJson.toString());
+			//lastWriteFuture = this.ch.writeAndFlush(requestJson.toString());
+			/*if (lastWriteFuture != null) {
+				lastWriteFuture.sync();
+			}*/
 			return ResultVOUtil.success(mft.myGet(60,TimeUnit.SECONDS));
 		}catch(TimeoutException te) {
 			te.printStackTrace();
@@ -98,6 +153,99 @@ public class DubboService {
 		return ResultVOUtil.error(1, errMsg);
 	}
 
+	/**
+	 * ObjectDecoder
+	 */
+	private void initClientO() {
+		EventLoopGroup worker = new NioEventLoopGroup();
+		try {
+			Bootstrap b = new Bootstrap();
+			b.group(worker);
+			b.channel(NioSocketChannel.class);
+			b.option(ChannelOption.SO_KEEPALIVE, true);
+			b.handler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				protected void initChannel(SocketChannel ch) throws Exception {
+					ch.pipeline().addLast(new ObjectEncoder());
+					ch.pipeline().addLast(new ObjectDecoder(Integer.MAX_VALUE,
+                            ClassResolvers.cacheDisabled(null)));
+					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
+						@Override
+						public void channelRead(ChannelHandlerContext ctx, Object msg) {
+							ResultVO result = (ResultVO)msg;
+							if(!result.isSuccess()) return;
+							Map<String,Object> resultMap = (Map<String,Object>)result.getData();
+							JSONObject requestObject = (JSONObject)resultMap.get("requestObject");
+							long threadID = requestObject.getLongValue("threadID");
+							System.out.println("**************//////////output"+result);
+							mft.set(threadID, resultMap.get("resultData"));
+						}
+						@Override
+						public void channelActive(ChannelHandlerContext ctx) {
+							//when client connect to server, say hello.
+//							//ctx.writeAndFlush(params.toString());
+//							JSONObject params = new JSONObject();
+//							params.put("name", "Tticc");
+//							JSONObject requestJson = new JSONObject();
+//							requestJson.put("threadID", 1l);
+//							requestJson.put("serviceKey", "sayHello");
+//							requestJson.put("params", params);
+//							ctx.writeAndFlush(requestJson.toString());
+						}
+					});
+				}
+			});
+			Channel ch = b.connect(HOST, PORT).sync().channel();
+
+			ChannelFuture lastWriteFuture = null;
+			
+			// 使用LinkedBlockingQueue 来实现channel复用
+			// 整个client仍然是单线程的？所以才会因为LinkedBlockingQueue阻塞住？但是为什么调试的时候没事？
+			// 为什么有这样的入参：
+			// input: {"threadID":"19","serviceKey":"sayHello","params":{"name":"Tticc3"}}{"threadID":"17","serviceKey":"sayHello","params":{"name":"Tticc3"}}
+			////// 这全都是因为 netty 读取数据的原因。服务端会从块中读取数据。由于client端在一瞬间就writeAndFlush了4条数据
+			////// server端一次性读了这四条数据，导致数据解析失败。那么有两种解决方案
+			////// 1.server读取定长的数据
+			////// 2.server读取Object
+			////// 当然，实际上还有第3种，设置client端发送数据间隔。测试可用。
+			// 又发现了一个问题：为什么被关闭了？ java.io.IOException: 远程主机强迫关闭了一个现有的连接。
+			for(;;) {
+				String requestStr = "";
+				//requestStr = lbq.take();
+				requestStr = lbq.poll(5, TimeUnit.SECONDS);
+				if(null == requestStr) {
+					requestStr = "geek";
+				}
+				lastWriteFuture = ch.writeAndFlush(ResultVOUtil.success(requestStr));
+				//System.out.println("|||||||||||||||||||||||||||||||||||output is:"+requestStr);
+				if (lastWriteFuture != null) {
+					lastWriteFuture.sync();
+				}
+				//Thread.sleep(2500);
+				if ("SHUTDOWNNOW".equals(requestStr)) {
+					 ch.closeFuture().sync();
+					 break;
+				}
+			}
+			
+//			JSONObject params = new JSONObject();
+//			params.put("name", "Tticc");
+//			JSONObject requestJson = new JSONObject();
+//			requestJson.put("threadID", 1l);
+//			requestJson.put("serviceKey", "sayHello");
+//			requestJson.put("params", params);
+			//this.ch.writeAndFlush(requestJson.toString());
+			// now send message to server, take Thread ID beyond basic info
+		}catch (InterruptedException e) {
+				e.printStackTrace();
+		}finally {
+			worker.shutdownGracefully();
+		}
+	}
+
+	/**
+	 *StringDecoder 
+	 */
 	private void initClient() {
 		EventLoopGroup worker = new NioEventLoopGroup();
 		try {
@@ -122,19 +270,58 @@ public class DubboService {
 						@Override
 						public void channelActive(ChannelHandlerContext ctx) {
 							//when client connect to server, say hello.
-							//ctx.writeAndFlush(params.toString());
+//							//ctx.writeAndFlush(params.toString());
+//							JSONObject params = new JSONObject();
+//							params.put("name", "Tticc");
+//							JSONObject requestJson = new JSONObject();
+//							requestJson.put("threadID", 1l);
+//							requestJson.put("serviceKey", "sayHello");
+//							requestJson.put("params", params);
+//							ctx.writeAndFlush(requestJson.toString());
 						}
 					});
 				}
-			}); 
-			this.ch = b.connect(HOST, PORT).sync().channel();
-			JSONObject params = new JSONObject();
-			params.put("name", "Tticc");
-			JSONObject requestJson = new JSONObject();
-			requestJson.put("threadID", 1l);
-			requestJson.put("serviceKey", "sayHello");
-			requestJson.put("params", params);
-			this.ch.writeAndFlush(requestJson.toString());
+			});
+			Channel ch = b.connect(HOST, PORT).sync().channel();
+
+			ChannelFuture lastWriteFuture = null;
+			
+			// 使用LinkedBlockingQueue 来实现channel复用
+			// 整个client仍然是单线程的？所以才会因为LinkedBlockingQueue阻塞住？但是为什么调试的时候没事？
+			// 为什么有这样的入参：
+			// input: {"threadID":"19","serviceKey":"sayHello","params":{"name":"Tticc3"}}{"threadID":"17","serviceKey":"sayHello","params":{"name":"Tticc3"}}
+			////// 这全都是因为 netty 读取数据的原因。服务端会从块中读取数据。由于client端在一瞬间就writeAndFlush了4条数据
+			////// server端一次性读了这四条数据，导致数据解析失败。那么有两种解决方案
+			////// 1.server读取定长的数据
+			////// 2.server读取Object
+			////// 当然，实际上还有第3种，设置client端发送数据间隔。测试可用。
+			// 又发现了一个问题：为什么被关闭了？ java.io.IOException: 远程主机强迫关闭了一个现有的连接。
+			for(;;) {
+				String requestStr = "";
+				//requestStr = lbq.take();
+				requestStr = lbq.poll(5, TimeUnit.SECONDS);
+				if(null == requestStr) {
+					requestStr = "geek";
+				}
+				lastWriteFuture = ch.writeAndFlush(requestStr);
+				System.out.println("|||||||||||||||||||||||||||||||||||output is:"+requestStr);
+				if (lastWriteFuture != null) {
+					lastWriteFuture.sync();
+				}
+				Thread.sleep(2500);
+				if ("SHUTDOWNNOW".equals(requestStr)) {
+					 ch.closeFuture().sync();
+					 break;
+				}
+			}
+			
+//			JSONObject params = new JSONObject();
+//			params.put("name", "Tticc");
+//			JSONObject requestJson = new JSONObject();
+//			requestJson.put("threadID", 1l);
+//			requestJson.put("serviceKey", "sayHello");
+//			requestJson.put("params", params);
+			//this.ch.writeAndFlush(requestJson.toString());
 			// now send message to server, take Thread ID beyond basic info
 		}catch (InterruptedException e) {
 				e.printStackTrace();
