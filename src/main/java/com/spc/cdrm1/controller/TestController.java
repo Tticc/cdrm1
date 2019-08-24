@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSONObject;
 import com.spc.cdrm1.rpcDemo.RpcFramework;
 import com.spc.cdrm1.rpcDemo.RpcService;
 import com.spc.cdrm1.service.ProductService;
@@ -28,6 +29,7 @@ import com.spc.cdrm1.util.CookieUtil;
 import com.spc.cdrm1.util.ResultVOUtil;
 import com.spc.cdrm1.util.redisUtil.RedisUtil_Value;
 import com.spc.cdrm1.vo.ResultVO;
+import com.spc.other.rpcAnetty.simulateDubbo.DubboService;
 
 
 
@@ -49,10 +51,12 @@ public class TestController {
 	private RpcFramework rpcFramework;
 	@Resource
 	private ScheduledExecutorService scheduleThreadPool;
+	@Resource
+	private DubboService dubboService;
 
 	/**
 	 * Rpc 测试
-	 * Rpc服务会在app启动时开启。{@link com.spc.cdrm1.rpcDemo.StartRPCWhenAppBoot}
+	 * Rpc服务会在app启动时开启。{@linkplain com.spc.cdrm1.rpcDemo.StartRPCWhenAppBoot StartRPCWhenAppBoot}
 	 * @param name
 	 * @return
 	 * @throws Exception
@@ -82,6 +86,19 @@ public class TestController {
 //		return ResultVOUtil.success(f.get());
 		
 
+	}
+	/**
+	 * netty Rpc 测试
+	 * @author Wen, Changying
+	 * @param name
+	 * @return
+	 * @date 2019年8月24日
+	 */
+	@GetMapping("/rpc/{name}")
+	public ResultVO testNettyRpc(@PathVariable String name) {
+		JSONObject params = new JSONObject();
+		params.put("name", name);
+		return (ResultVO)dubboService.getDubboService("sayHello", params);
 	}
 	
 	/**

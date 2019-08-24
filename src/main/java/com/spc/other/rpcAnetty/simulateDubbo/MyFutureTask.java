@@ -62,6 +62,7 @@ public class MyFutureTask<V> {
     public void putMySelf() {
     	putMyWaitNode(Thread.currentThread().getId(),new MyWaitNode());
     }
+    
     /**
      * 调用 map 的 putIfAbsent 来插入线程。因为线程id不会重复，所以暂时不清楚会有什么坏处。
      * @author Wen, Changying
@@ -80,7 +81,8 @@ public class MyFutureTask<V> {
      * 设置返回值，并调用 LockSupport.unpark() 唤醒所有因为调用 get() 而阻塞着的线程<br/>
      * 
      * @author Wen, Changying
-     * @param v
+     * @param threadID 线程ID
+     * @param v 返回值
      * @date 2019年8月15日
      */
     public void set(long threadID, V v) {
@@ -93,35 +95,12 @@ public class MyFutureTask<V> {
     		LockSupport.unpark(node.thread);
     	}
     }
-
-	/**
-	 * 获取netty的回写数据，数据没有回来时挂起等待。线程可能会永远沉睡下去，所以尽量使用有等待时间的另一个myGet
-	 * @author Wen, Changying
-	 * @return
-	 * @throws Exception 
-	 * @date 2019年8月19日
-	 */
-    @Deprecated
-    private V myGet() throws Exception {
-    	MyWaitNode node;
-
-    	long threadID = Thread.currentThread().getId();
-    	if((node = waitNodes.get(threadID)) == null) 
-    		throw new Exception("调用putMySelf设置 MyWaitNode 失败!");
-    	
-    	for(;;) {
-	    	if(node.state > COMPLETING) {
-	        	waitNodes.remove(threadID);
-	    		return (V) node.outcome;
-	    	}
-            LockSupport.park(this);
-    	}
-    }
+    
     /**
      * 获取netty的回写数据，数据没有回来时挂起等待，等待超时抛出异常
      * @author Wen, Changying
-     * @param timeout
-     * @param unit
+     * @param timeout 超时时间
+     * @param unit 超时时间单位
      * @return
      * @throws TimeoutException, Exception 
      * @date 2019年8月19日
@@ -146,9 +125,34 @@ public class MyFutureTask<V> {
 	        	waitNodes.remove(threadID);
 	    		throw new TimeoutException();
 	    	}
+	    	// 放弃CPU时间片，有意义吗？
 	    	Thread.yield();
 	    	// 等待
             LockSupport.parkNanos(this, unit.toNanos(timeout));
+    	}
+    }
+
+	/**
+	 * 获取netty的回写数据，数据没有回来时挂起等待。线程可能会永远沉睡下去，所以尽量使用有等待时间的另一个myGet
+	 * @author Wen, Changying
+	 * @return
+	 * @throws Exception 
+	 * @date 2019年8月19日
+	 */
+    @Deprecated
+    private V myGet() throws Exception {
+    	MyWaitNode node;
+
+    	long threadID = Thread.currentThread().getId();
+    	if((node = waitNodes.get(threadID)) == null) 
+    		throw new Exception("调用putMySelf设置 MyWaitNode 失败!");
+    	
+    	for(;;) {
+	    	if(node.state > COMPLETING) {
+	        	waitNodes.remove(threadID);
+	    		return (V) node.outcome;
+	    	}
+            LockSupport.park(this);
     	}
     }
 	/**

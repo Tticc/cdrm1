@@ -33,7 +33,7 @@ import io.netty.handler.codec.string.StringEncoder;
 
 
 public class DubboService {
-	public static void main(String[] args) throws InterruptedException {
+/*	public static void main(String[] args) throws InterruptedException {
 		// 初始化client。
 		DubboService dsa = DubboService.getInstance();
 		Thread.sleep(5000);
@@ -93,13 +93,43 @@ public class DubboService {
 //		System.out.println("output in main 2:" + params);
 		
 		
+	}*/
+	
+	public static void main(String[] args) {
+		JSONObject j = new JSONObject();
+		j.put("tid", 12L);
+		j.put("spid", "122");
+		j.put("nullpid", "null");
+		j.put("sspid", "aaa");
+		System.out.println(j.getLongValue("tid"));
+		System.out.println(j.getLongValue("spid"));
+		System.out.println(j.getLong("nullpid"));
+		System.out.println(j.getLongValue("sspid"));
+		try {
+			Object msg = "hello world";
+			ResultVO rv = (ResultVO)msg;
+		}catch(java.lang.ClassCastException cce) {
+			System.out.println(cce.getMessage());
+		}
+		
 	}
 	
 	//private Channel ch;
-	private MyFutureTask<Object> mft = new MyFutureTask<Object>();;
+	private MyFutureTask<Object> mft = new MyFutureTask<Object>();
 	//private final String HOST = "127.0.0.1";
-	private final String HOST = "192.168.1.103";
-	private final int PORT = 8000;
+	private static String host = "192.168.1.103";
+	private static int port = 8000;
+	public DubboService setMft(MyFutureTask<Object> mft) {
+		this.mft = mft;
+		return this;
+	}
+	public static void setHost(String host) {
+		DubboService.host = host;
+	}
+	public static void setPort(int port) {
+		DubboService.port = port;
+	}
+	
 	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
 	
 	LinkedBlockingQueue<String> lbq = new LinkedBlockingQueue<String>(1000*1000);
@@ -146,12 +176,14 @@ public class DubboService {
 			requestJson.put("serviceKey", serviceKey);
 			requestJson.put("params", params);
 			lbq.add(requestJson.toString());
-			// {threadID=21,serviceKey=sayHello,params={name=Chad,...}}
-			// 这里为什么无法写入呢？
+			
+			// 这里为什么无法写入呢？因为channel已经在finally里被close了
 			//lastWriteFuture = this.ch.writeAndFlush(requestJson.toString());
 			/*if (lastWriteFuture != null) {
 				lastWriteFuture.sync();
 			}*/
+			
+			//阻塞 60s 等待返回
 			return ResultVOUtil.success(mft.myGet(60,TimeUnit.SECONDS));
 		}catch(TimeoutException te) {
 			te.printStackTrace();
@@ -160,11 +192,15 @@ public class DubboService {
 			e.printStackTrace();
 			errMsg = e.getMessage();
 		}
+		// 非正常返回
 		return ResultVOUtil.error(1, errMsg);
 	}
 
 	/**
-	 * 由于以String的方式传输数据会出问题，所以改成Object传输。使用jdk的对象序列，
+	 * 由于以String的方式传输数据会出问题，所以改成Object传输。使用jdk的对象序列。<br/>
+	 * String方式传输：{@linkplain DubboService#initClient() initClient()}
+	 * @author Wen, Changying
+	 * @date 2019年8月24日
 	 */
 	private void initClientO() {
 		EventLoopGroup worker = new NioEventLoopGroup();
@@ -182,29 +218,32 @@ public class DubboService {
 					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
 						@Override
 						public void channelRead(ChannelHandlerContext ctx, Object msg) {
-							ResultVO result = (ResultVO)msg;
-							if(!result.isSuccess()) return;
-							Map<String,Object> resultMap = (Map<String,Object>)result.getData();
-							JSONObject requestObject = (JSONObject)resultMap.get("requestData");
-							long threadID = requestObject.getLongValue("threadID");
-							mft.set(threadID, resultMap.get("responseData"));
+							ResultVO result = null;
+							Map<String,Object> resultMap = null;
+							try {
+								result = (ResultVO)msg;
+								if(result == null || !result.isSuccess()) return;
+								if((resultMap = (Map<String,Object>)result.getData()) == null) return;
+								JSONObject requestObject = (JSONObject)resultMap.get("requestData");
+								long threadID = requestObject.getLongValue("threadID");
+								mft.set(threadID, resultMap.get("responseData"));
+							}catch(java.lang.ClassCastException cce) {
+								cce.printStackTrace();
+							}catch(com.alibaba.fastjson.JSONException je) {
+								je.printStackTrace();
+							}catch(Exception e) {
+								e.printStackTrace();
+							}
 						}
 						@Override
 						public void channelActive(ChannelHandlerContext ctx) {
 							//when client connect to server, say hello.
-//							//ctx.writeAndFlush(params.toString());
-//							JSONObject params = new JSONObject();
-//							params.put("name", "Tticc");
-//							JSONObject requestJson = new JSONObject();
-//							requestJson.put("threadID", 1l);
-//							requestJson.put("serviceKey", "sayHello");
-//							requestJson.put("params", params);
-//							ctx.writeAndFlush(requestJson.toString());
+							//System.out.println(ResultVOUtil.success("channel active!"));
 						}
 					});
 				}
 			});
-			Channel ch = b.connect(HOST, PORT).sync().channel();
+			Channel ch = b.connect(host, port).sync().channel();
 
 			ChannelFuture lastWriteFuture = null;
 			
@@ -222,13 +261,13 @@ public class DubboService {
 			for(;;) {
 				String requestStr = "";
 				requestStr = lbq.take();
-				System.out.println("requestStr is:"+requestStr);
+				// 每隔 5s 与server通信一次
 				//requestStr = lbq.poll(5, TimeUnit.SECONDS);
+				System.out.println("requestStr is:"+requestStr);
 				if(null == requestStr) {
 					requestStr = "geek";
 				}
 				lastWriteFuture = ch.writeAndFlush(ResultVOUtil.success(requestStr));
-				//System.out.println("|||||||||||||||||||||||||||||||||||output is:"+requestStr);
 				if (lastWriteFuture != null) {
 					lastWriteFuture.sync();
 				}
@@ -238,15 +277,6 @@ public class DubboService {
 					 break;
 				}
 			}
-			
-//			JSONObject params = new JSONObject();
-//			params.put("name", "Tticc");
-//			JSONObject requestJson = new JSONObject();
-//			requestJson.put("threadID", 1l);
-//			requestJson.put("serviceKey", "sayHello");
-//			requestJson.put("params", params);
-			//this.ch.writeAndFlush(requestJson.toString());
-			// now send message to server, take Thread ID beyond basic info
 		}catch (InterruptedException e) {
 				e.printStackTrace();
 		}finally {
@@ -298,7 +328,7 @@ public class DubboService {
 					});
 				}
 			});
-			Channel ch = b.connect(HOST, PORT).sync().channel();
+			Channel ch = b.connect(host, port).sync().channel();
 
 			ChannelFuture lastWriteFuture = null;
 			
