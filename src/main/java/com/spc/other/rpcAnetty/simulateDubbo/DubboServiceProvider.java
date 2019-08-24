@@ -76,7 +76,7 @@ public class DubboServiceProvider {
 					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
 						@Override
 					    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-							ResultVO result = null; JSONObject obj = new JSONObject();
+							ResultVO result = null; 
 							Map<String, Object> resultMap = new HashMap<String,Object>();
 							try {
 
@@ -86,7 +86,7 @@ public class DubboServiceProvider {
 						        if(req instanceof String) {
 						        	System.out.println("this is a String");
 						        }
-						        obj = JSONObject.parseObject(req.toString());
+						        JSONObject obj = JSONObject.parseObject(req.toString());
 								String methodName = String.valueOf(obj.get("serviceKey"));
 								Map<String, Object> params = (Map<String, Object>) obj.get("params");
 								Method m = ServiceMap.serviceMap.get(methodName);
@@ -100,8 +100,8 @@ public class DubboServiceProvider {
 									}
 									param[i] = paramObject;
 								}
-								resultMap.put("resultData", m.invoke(new ServiceImpl(), param));
-								resultMap.put("requestObject", obj);
+								resultMap.put("responseData", m.invoke(new ServiceImpl(), param));
+								resultMap.put("requestData", obj);
 								result = ResultVOUtil.success(resultMap);
 							}catch(Exception e) {
 								result = ResultVOUtil.error(1, e.getMessage());

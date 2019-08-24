@@ -31,11 +31,12 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
+
 public class DubboService {
 	public static void main(String[] args) throws InterruptedException {
 		// 初始化client。
-		DubboService ds = DubboService.getInstance();
-		Thread.sleep(3000);
+		DubboService dsa = DubboService.getInstance();
+		Thread.sleep(5000);
 		
 		// 调用 dubbo 服务
 		
@@ -43,36 +44,45 @@ public class DubboService {
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("0000000000000000000000000000000");
+				// 单例测试 成功
+				DubboService ds = DubboService.getInstance();
+				System.out.println(ds.toString());
+				System.out.println("Tticc ****************************************************");
 				params.put("name", "Tticc");
-				ds.getDubboService("sayHello", params);
+				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
 		}, "Tticc").start();
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("11111111111111111111111111111111");
+				DubboService ds = DubboService.getInstance();
+				System.out.println(ds.toString());
+				System.out.println("Tticc1 ****************************************************");
 				params.put("name", "Tticc1");
-				ds.getDubboService("sayHello", params);
+				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
 		},"Tticc1").start();
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("22222222222222222222222222222222");
+				DubboService ds = DubboService.getInstance();
+				System.out.println(ds.toString());
+				System.out.println("Tticc2 ****************************************************");
 				params.put("name", "Tticc2");
-				ds.getDubboService("sayHello", params);
+				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
 		}, "Tticc2").start();
 
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
-				System.out.println("3333333333333333333333333333333");
+				DubboService ds = DubboService.getInstance();
+				System.out.println(ds.toString());
+				System.out.println("Tticc3 ****************************************************");
 				params.put("name", "Tticc3");
-				ds.getDubboService("sayHello", params);
+				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
 		}, "Tticc3").start();
 		
@@ -87,8 +97,8 @@ public class DubboService {
 	
 	//private Channel ch;
 	private MyFutureTask<Object> mft = new MyFutureTask<Object>();;
-	private final String HOST = "127.0.0.1";
-	//private final String HOST = "192.168.1.103";
+	//private final String HOST = "127.0.0.1";
+	private final String HOST = "192.168.1.103";
 	private final int PORT = 8000;
 	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
 	
@@ -135,7 +145,7 @@ public class DubboService {
 			requestJson.put("threadID", String.valueOf(threadID));
 			requestJson.put("serviceKey", serviceKey);
 			requestJson.put("params", params);
-			System.out.println(lbq.add(requestJson.toString()));
+			lbq.add(requestJson.toString());
 			// {threadID=21,serviceKey=sayHello,params={name=Chad,...}}
 			// 这里为什么无法写入呢？
 			//lastWriteFuture = this.ch.writeAndFlush(requestJson.toString());
@@ -154,7 +164,7 @@ public class DubboService {
 	}
 
 	/**
-	 * ObjectDecoder
+	 * 由于以String的方式传输数据会出问题，所以改成Object传输。使用jdk的对象序列，
 	 */
 	private void initClientO() {
 		EventLoopGroup worker = new NioEventLoopGroup();
@@ -175,10 +185,9 @@ public class DubboService {
 							ResultVO result = (ResultVO)msg;
 							if(!result.isSuccess()) return;
 							Map<String,Object> resultMap = (Map<String,Object>)result.getData();
-							JSONObject requestObject = (JSONObject)resultMap.get("requestObject");
+							JSONObject requestObject = (JSONObject)resultMap.get("requestData");
 							long threadID = requestObject.getLongValue("threadID");
-							System.out.println("**************//////////output"+result);
-							mft.set(threadID, resultMap.get("resultData"));
+							mft.set(threadID, resultMap.get("responseData"));
 						}
 						@Override
 						public void channelActive(ChannelHandlerContext ctx) {
@@ -208,11 +217,13 @@ public class DubboService {
 			////// 1.server读取定长的数据
 			////// 2.server读取Object
 			////// 当然，实际上还有第3种，设置client端发送数据间隔。测试可用。
-			// 又发现了一个问题：为什么被关闭了？ java.io.IOException: 远程主机强迫关闭了一个现有的连接。
+			// 又发现了一个问题：为什么被关闭了？ java.io.IOException: 远程主机强迫关闭了一个现有的连接。两台电脑不会出现这个问题。
+			// 为什么参数全部都是 Tticc3?
 			for(;;) {
 				String requestStr = "";
-				//requestStr = lbq.take();
-				requestStr = lbq.poll(5, TimeUnit.SECONDS);
+				requestStr = lbq.take();
+				System.out.println("requestStr is:"+requestStr);
+				//requestStr = lbq.poll(5, TimeUnit.SECONDS);
 				if(null == requestStr) {
 					requestStr = "geek";
 				}
@@ -244,8 +255,13 @@ public class DubboService {
 	}
 
 	/**
-	 *StringDecoder 
+	 * 以String的方式传输数据。<br/>
+	 * 但这会出现一个问题。Server 端在读数据的时候，可能会一次读取了多个请求的数据，造成错误。这时因为Server是以块的方式读取数据。
+	 * 如果多个请求同时发生，那么Server就可能将多个请求的数据当成一个请求的读取了。
+	 * 所以改用对象传输。{@linkplain DubboService#initClientO()}
 	 */
+	@SuppressWarnings("unused")
+	@Deprecated
 	private void initClient() {
 		EventLoopGroup worker = new NioEventLoopGroup();
 		try {

@@ -25,6 +25,7 @@ public class TestContinueWrite {
 
 		// 初始化client。
 		DubboService ds = DubboService.getInstance();
+		System.out.println(ds.toString());
 		Thread.sleep(3000);
 		
 		// 调用 dubbo 服务
