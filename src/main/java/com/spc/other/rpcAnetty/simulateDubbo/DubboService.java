@@ -220,12 +220,22 @@ public class DubboService {
 						public void channelRead(ChannelHandlerContext ctx, Object msg) {
 							ResultVO result = null;
 							Map<String,Object> resultMap = null;
+							Long threadID = null;
 							try {
 								result = (ResultVO)msg;
-								if(result == null || !result.isSuccess()) return;
-								if((resultMap = (Map<String,Object>)result.getData()) == null) return;
-								JSONObject requestObject = (JSONObject)resultMap.get("requestData");
-								long threadID = requestObject.getLongValue("threadID");
+								
+								// 如果返回值为空，或失败，直接丢弃
+								if(result == null || !result.isSuccess()) 
+									return; // 丢弃，无法将数据返回对应线程
+								
+								// 如果返回VO中的data为空，或data中的requestData为null，或requestData中的threadID为null，丢弃
+								if((resultMap = (Map<String,Object>)result.getData()) == null ||
+										(JSONObject)resultMap.get("requestData") == null ||
+										(threadID = ((JSONObject)resultMap.get("requestData")).getLong("threadID"))==null) 
+									return; // 丢弃，无法将数据返回对应线程
+								
+								// 成功的返回
+								//mft.set(threadID, result);
 								mft.set(threadID, resultMap.get("responseData"));
 							}catch(java.lang.ClassCastException cce) {
 								cce.printStackTrace();

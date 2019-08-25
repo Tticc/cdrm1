@@ -94,7 +94,7 @@ public class TestController {
 	 * @return
 	 * @date 2019年8月24日
 	 */
-	@GetMapping("/rpc/{name}")
+	@GetMapping("/nrpc/{name}")
 	public ResultVO testNettyRpc(@PathVariable String name) {
 		JSONObject params = new JSONObject();
 		params.put("name", name);
