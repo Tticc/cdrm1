@@ -29,5 +29,10 @@ public class ResultVO<T> implements Serializable {
 	public boolean isSuccess() {
 		return this.getCode() == ResultEnum.SUCCESS.getCode();
 	}
+	@Override
+	public String toString() {
+		
+		return "{code="+code+",message="+message+",date="+data+"}";
+	}
 	
 }

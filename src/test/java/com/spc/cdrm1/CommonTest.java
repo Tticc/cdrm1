@@ -15,11 +15,20 @@ import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+
 import org.junit.Test;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
+import com.alibaba.fastjson.JSONObject;
+import com.spc.cdrm1.util.ResultVOUtil;
 
 import net.bytebuddy.description.field.FieldDescription.InGenericShape;
 /**
  * <ol>
+ * <li>测试ResultVO 格式  2019-8-25</li>
+ * <li>测试 不定长参数</li>
+ * <li>Eclipse 不支持 @Nullable & @NonNull 检查</li>
  * <li>测试 ConcurrentHashMap</li>
  * <li>测试 Integer 和 int 的打包解包转换和存储位置</li>
  * <li>测试 hashcode</li>
@@ -38,13 +47,45 @@ import net.bytebuddy.description.field.FieldDescription.InGenericShape;
  */
 @SuppressWarnings("unused")
 public class CommonTest {
+	
+	// 测试ResultVO 格式  2019-8-25
+	@Test
+	public void test_printVO() {
+		//JSONObject jo = new JSONObject();
+		Map<String, String> jo = new ConcurrentHashMap<String, String>();
+		jo.put("one", "1");
+		jo.put("two", "2");
+		System.out.println(ResultVOUtil.success(jo));
+	}
 
+	// 测试 不定长参数。不定长参数会默认转为Array
+	@Test
+	public void test_StringtoArray() {
+		String[] paths = test_mutlParam("app.xml","app-value.xml","app-jdbc.xml");
+		for(String p:paths) System.out.println(p);
+	}
+	private String[] test_mutlParam(String... paths) {
+		return paths;
+	}
+	
+	//Eclipse 不支持 @Nullable & @NonNull 检查
+	@Test
+	public void test_NotNull() {
+		// @Nullable & @NonNull
+		test_null(null);
+	}
+	private String test_null(@NonNull String name) {
+		return name;
+	}
+	
 	// 测试 ConcurrentHashMap 2019-08-06
 	@Test
 	public void test_ConcurrentMap() {
 		int HASH_BITS = 0x7fffffff;
 		System.out.println(1&HASH_BITS);
 		Map<String, String> chm = new ConcurrentHashMap<String, String>();
+		System.out.println(chm.put("one", "1"));
+		System.out.println(chm);
 	}
 	//测试 Integer 和 int 的打包解包转换和存储位置
 	@Test
