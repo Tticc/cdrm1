@@ -30,14 +30,14 @@ public class CommonService {
 	public ResultVO checkCookieIfAvailable(HttpServletRequest req, String name) {
 		Cookie cookie = CookieUtil.getCookie(req, name);
 		if (cookie == null) {
-			return ResultVOUtil.error(1, String.format("Cookie中查不到%s", name));
+			return ResultVOUtil.error(String.format("Cookie中查不到%s", name));
 		}/*
 		System.out.println(cookie.getDomain());
 		System.out.println(cookie.getMaxAge());
 		System.out.println(cookie.getPath());*/
 		String tokenValue = (String) redisUtil_Value.getValue(String.format(TOKEN_PREFIX, cookie.getValue()));
 		if(StringUtils.isEmpty(tokenValue)) {
-			return ResultVOUtil.error(1, String.format("Redis中查不到%s", name));
+			return ResultVOUtil.error(String.format("Redis中查不到%s", name));
 		}
 		return ResultVOUtil.success();
 	}

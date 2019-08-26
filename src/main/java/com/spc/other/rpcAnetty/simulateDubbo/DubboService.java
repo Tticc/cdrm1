@@ -193,7 +193,7 @@ public class DubboService {
 			errMsg = e.getMessage();
 		}
 		// 非正常返回
-		return ResultVOUtil.error(1, errMsg);
+		return ResultVOUtil.error(errMsg);
 	}
 
 	/**

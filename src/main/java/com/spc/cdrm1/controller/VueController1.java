@@ -78,7 +78,7 @@ public class VueController1 {
 	@GetMapping("/save/{key}/{value}")
 	public ResultVO saveToRedis_path(@PathVariable String key, @PathVariable String value) {
 		if(!redis_val.setValue(key, value)) {
-			return ResultVOUtil.error(1, "save {key:"+key+"} failed");
+			return ResultVOUtil.error("save {key:"+key+"} failed");
 		}
 		return ResultVOUtil.success("{key:"+key+"} was save");
 	}
@@ -95,7 +95,7 @@ public class VueController1 {
 	@GetMapping("/save")
 	public ResultVO saveToRedis_params(@RequestParam String key, @RequestParam String value) {
 		if(!redis_val.setValue(key, value)) {
-			return ResultVOUtil.error(1, "save {key:"+key+"} failed");
+			return ResultVOUtil.error("save {key:"+key+"} failed");
 		}
 		return ResultVOUtil.success("{key:"+key+"} was save");
 	}

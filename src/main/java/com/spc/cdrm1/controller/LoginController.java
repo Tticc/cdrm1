@@ -40,7 +40,7 @@ public class LoginController {
 
 	@GetMapping("/404_notfound")
 	public ResultVO methodNotFound(){
-		return ResultVOUtil.error(1,"请求路径错误！");
+		return ResultVOUtil.error("请求路径错误！");
 	}
 
 }

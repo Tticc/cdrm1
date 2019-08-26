@@ -32,17 +32,7 @@ public class ResultVOUtil {
 	}
 	
 	/**
-	 * 失败
-	 * @author Wen, Changying
-	 * @param enu MyEnum
-	 * @return
-	 * @date 2019年7月20日
-	 */
-	public static ResultVO error(MyEnum enu) {
-		return setVO(enu.getCode(),enu.getMessage(),null);
-	}
-	/**
-	 * 失败
+	 * 失败。设置error code和message
 	 * @author Wen, Changying
 	 * @param code
 	 * @param msg
@@ -51,6 +41,29 @@ public class ResultVOUtil {
 	 */
 	public static ResultVO error(int code, String msg) {
 		return setVO(code,msg,null);
+	}
+
+	/**。设置error message
+	 * 失败
+	 * @author Wen, Changying
+	 * @param msg
+	 * @return
+	 * @date 2019年8月26日
+	 */
+	public static ResultVO error(String msg) {
+		return setVO(ResultEnum.ERROR.getCode(),msg,null);
+	}
+	
+	/**
+	 * 失败。设置error message和数据
+	 * @author Wen, Changying
+	 * @param msg
+	 * @param data
+	 * @return
+	 * @date 2019年8月26日
+	 */
+	public static ResultVO error(String msg, Object data) {
+		return setVO(ResultEnum.ERROR.getCode(),msg,data);
 	}
 	
 	/**

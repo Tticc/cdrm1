@@ -77,34 +77,51 @@ public class DubboServiceProvider {
 						@Override
 					    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 							ResultVO result = null; 
-							Map<String, Object> resultMap = new HashMap<String,Object>();
 							try {
 
+								/**
+								 * 待测试项
+								 * 1.Object req = requestObject.getData();拿到的是String还是JSONObject？
+								 * 2.有参方法的调用和无参方法的调用可以兼容吗？
+								 * 3.缺少参数的话，能正确提示吗？
+								 * 4.client需要对应修改调用失败的代码返回。
+								 */
 								ResultVO requestObject = (ResultVO)msg;
 						        System.out.println("input: "+requestObject.toString());
-						        Object req = requestObject.getData();
+						        Object req = requestObject.getData(); // 得到一个String，所以不需要做null判断。是吗？
 						        if(req instanceof String) {
 						        	System.out.println("this is a String");
 						        }
+						        if(req instanceof JSONObject) {
+						        	System.out.println("this is a JSONObject");
+						        }
 						        JSONObject obj = JSONObject.parseObject(req.toString());
 								String methodName = String.valueOf(obj.get("serviceKey"));
-								Map<String, Object> params = (Map<String, Object>) obj.get("params");
+								if("".equals(methodName) || "null".equals(methodName))
+									throw new Exception("未提供serviceKey.");
+								
+								
 								Method m = ServiceMap.serviceMap.get(methodName);
 								Parameter[] paramName = m.getParameters();
-								Class<?>[] paramClass = m.getParameterTypes();
-								Object[] param = new Object[paramName.length];
-								for(int i = 0; i < paramName.length; i++) {
-									Object paramObject = params.get(paramName[i].getName());
-									if(paramObject == null) {
-										//这里抛异常，直接返回失败信息。
+								// 当前方法无参。需要if吗？
+								if(paramName != null && paramName.length == 0) {
+									result = ResultVOUtil.success(generateResultMap(obj,m.invoke(new ServiceImpl())));
+								}else {
+									Map<String, Object> params = (Map<String, Object>) obj.get("params");
+									Class<?>[] paramClass = m.getParameterTypes();
+									Object[] param = new Object[paramName.length];
+									for(int i = 0; i < paramName.length; i++) {
+										Object paramObject = params.get(paramName[i].getName());
+										if(paramObject == null) {
+											throw new Exception("缺少参数："+paramName[i].getName());
+										}
+										param[i] = paramObject;
 									}
-									param[i] = paramObject;
+									// 正常返回
+									result = ResultVOUtil.success(generateResultMap(obj,m.invoke(new ServiceImpl(), param)));
 								}
-								resultMap.put("responseData", m.invoke(new ServiceImpl(), param));
-								resultMap.put("requestData", obj);
-								result = ResultVOUtil.success(resultMap);
 							}catch(Exception e) {
-								result = ResultVOUtil.error(1, e.getMessage());
+								result = ResultVOUtil.error(e.getMessage(), msg);
 							}
 					        ctx.writeAndFlush(result);
 					    }
@@ -119,6 +136,12 @@ public class DubboServiceProvider {
 			worker.shutdownGracefully();
 		}
 	}
+	private Object generateResultMap(Object requestData, Object responseData) {
+		Map<String, Object> resultMap = new HashMap<String,Object>();
+		resultMap.put("requestData", requestData);
+		resultMap.put("responseData", responseData);
+		return resultMap;
+	}
 	/**
 	 * StringDecoder,StringEncoder
 	 * @author Wen, Changying
@@ -127,6 +150,7 @@ public class DubboServiceProvider {
 	 * @throws Exception
 	 * @date 2019年8月22日
 	 */
+	@Deprecated
 	public void provide(final Object service, int port) throws Exception {
 		if(service == null) 
 			throw new IllegalArgumentException("service instance == null");
@@ -176,7 +200,7 @@ public class DubboServiceProvider {
 								}
 								result = ResultVOUtil.success(m.invoke(new ServiceImpl(), param));
 							}catch(Exception e) {
-								result = ResultVOUtil.error(1, e.getMessage());
+								result = ResultVOUtil.error(e.getMessage());
 							}
 							String rr = JSONObject.toJSON(result).toString();
 							obj.put("result", rr);

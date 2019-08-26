@@ -33,7 +33,7 @@ public class ExceptionHandle {
         if(e instanceof CustomException){
             return ResultVOUtil.error(((CustomException)e).getCode(), ((CustomException)e).getMessage());
         }
-		return ResultVOUtil.error(1,"execption message:"+e.getMessage());
+		return ResultVOUtil.error("execption message:"+e.getMessage());
 	}
 
     /*@ExceptionHandler(value = Exception.class)

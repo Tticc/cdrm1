@@ -41,7 +41,7 @@ public class CooperateController {
 	@ResponseBody
 	public ResultVO updateContent(HttpServletRequest req, @RequestParam String content) {
 		if(this.sb.toString().equals((content=String.valueOf(content)))) {
-			return ResultVOUtil.error(1, "no change");
+			return ResultVOUtil.error("no change");
 		}
 		this.sb.replace(0, this.sb.length(), content);		
 		redis_val.setValue(COOPCONTENT, sb.toString());
@@ -52,7 +52,7 @@ public class CooperateController {
 	@ResponseBody
 	public ResultVO getContent(HttpServletRequest req, @RequestParam String content) {
 		if(this.sb.toString().equals(String.valueOf(content))) {
-			return ResultVOUtil.error(1, "no change");
+			return ResultVOUtil.error("no change");
 		}
 		return ResultVOUtil.success(this.sb.toString());
 	}

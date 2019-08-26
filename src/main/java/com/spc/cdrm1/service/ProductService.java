@@ -32,7 +32,7 @@ public class ProductService {
 			productRepository.save(entity);
 		}catch(Exception ex) {
 			ex.printStackTrace();
-			return ResultVOUtil.error(1 ,ex.toString());
+			return ResultVOUtil.error(ex.toString());
 		}
 		return ResultVOUtil.success(ResultEnum.SUCCESS.getMessage());
 	}
@@ -57,7 +57,7 @@ public class ProductService {
 	public ResultVO findByNameLike(String name) {
 		List<Product> prodList = productRepository.findByNameLike("%"+name+"%");
 		if(prodList == null || prodList.size() == 0) {
-			return ResultVOUtil.error(1,"no product");
+			return ResultVOUtil.error("no product");
 		}
 		return ResultVOUtil.success(prodList);
 	}
