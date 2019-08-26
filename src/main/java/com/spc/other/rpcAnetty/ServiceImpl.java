@@ -7,4 +7,9 @@ public class ServiceImpl implements Service{
 		return "hello "+name;
 	}
 
+	@Override
+	public String sayBye() {
+		return "bye, client";
+	}
+
 }

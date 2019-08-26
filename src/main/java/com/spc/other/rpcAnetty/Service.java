@@ -9,4 +9,5 @@ public interface Service {
 	 * @author cv
 	 */
 	public String sayHello(String name);
+	public String sayBye();
 }
