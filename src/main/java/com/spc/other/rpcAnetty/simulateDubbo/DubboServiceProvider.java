@@ -85,8 +85,8 @@ public class DubboServiceProvider {
 								 * 待测试项
 								 * 1.Object req = requestObject.getData();拿到的是String还是JSONObject？ 是String
 								 * 2.有参方法的调用和无参方法的调用可以兼容吗？ 可以兼容
-								 * 3.缺少参数的话，能正确提示吗？ 
-								 * 4.client需要对应修改调用失败的代码返回。
+								 * 3.缺少参数的话，能正确提示吗？ 可以
+								 * 4.client需要对应修改调用失败的代码返回。已经改好
 								 */
 								ResultVO requestObject = (ResultVO)msg;
 						        System.out.println("input: "+requestObject.toString());

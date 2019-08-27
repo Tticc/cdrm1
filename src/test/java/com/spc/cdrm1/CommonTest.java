@@ -48,6 +48,15 @@ import net.bytebuddy.description.field.FieldDescription.InGenericShape;
 @SuppressWarnings("unused")
 public class CommonTest {
 	
+	@Test
+	public void test_ClassCastException() {
+		JSONObject jo = null;
+		Map joo = (Map)null;
+		System.out.println(joo);
+		JSONObject jt = JSONObject.parseObject("null");
+		System.out.println(jt == null);
+	}
+	
 	// 测试ResultVO 格式  2019-8-25
 	@Test
 	public void test_printVO() {

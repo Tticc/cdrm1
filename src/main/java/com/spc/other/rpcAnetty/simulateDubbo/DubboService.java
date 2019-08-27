@@ -48,7 +48,7 @@ public class DubboService {
 				DubboService ds = DubboService.getInstance();
 				System.out.println(ds.toString());
 				System.out.println("Tticc ****************************************************");
-				params.put("name", "Tticc");
+				//params.put("name", "Tticc");
 				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
 		}, "Tticc").start();
@@ -177,10 +177,10 @@ public class DubboService {
 			}*/
 			
 			//阻塞 60s 等待返回
-			return ResultVOUtil.success(mft.myGet(60,TimeUnit.SECONDS));
+			return mft.myGet(5,TimeUnit.SECONDS);
 		}catch(TimeoutException te) {
 			te.printStackTrace();
-			errMsg = te.getMessage();
+			errMsg = "调用超时！";
 		}catch (Exception e) {
 			e.printStackTrace();
 			errMsg = e.getMessage();
@@ -213,27 +213,31 @@ public class DubboService {
 						public void channelRead(ChannelHandlerContext ctx, Object msg) {
 							ResultVO result = null;
 							Map<String,Object> resultMap = null;
+							ResultVO requestVO = null;
+							JSONObject requestJSON = null;
 							Long threadID = null;
+							ResultVO returnVO = null;
 							try {
-								result = (ResultVO)msg;
+								result = (ResultVO)msg; // 如果对象转换失败，抛异常ClassCastException，然后丢弃。
 								
-								// 如果返回值为空，或失败，直接丢弃
-								if(result == null || result.getData() == null) 
-									return; // 丢弃，无法将数据返回对应线程
-								if(!result.isSuccess()) {
-									JSONObject reqJSON = (JSONObject)(((ResultVO)result.getData()).getData());
-									reqJSON.getLong("threadID");
-								}
-								
-								// 如果返回VO中的data为空，或data中的requestData为null，或requestData中的threadID为null，丢弃
-								if((resultMap = (Map<String,Object>)result.getData()) == null ||
-										(JSONObject)resultMap.get("requestData") == null ||
-										(threadID = ((JSONObject)resultMap.get("requestData")).getLong("threadID"))==null) 
-									return; // 丢弃，无法将数据返回对应线程
-								
+								// 如果result为空，或result的data为null，或requestData的VO为null，或requestData的请求JSON为null,
+								// 或请求JSON中的threadID为null，丢弃
+								if(result == null || 
+										(resultMap = (Map<String,Object>)result.getData()) == null || 
+										(requestVO = (ResultVO)resultMap.get("requestData")) == null || 
+										(requestJSON = JSONObject.parseObject(String.valueOf(requestVO.getData()))) == null ||
+										(threadID = requestJSON.getLong("threadID"))==null) 
+									return;
+					
 								// 成功的返回
 								//mft.set(threadID, result);
-								mft.set(threadID, resultMap.get("responseData"));
+								//mft.set(threadID, resultMap.get("responseData"));
+								if(result.isSuccess()) {
+									returnVO = ResultVOUtil.success(resultMap.get("responseData"));
+								}else {
+									returnVO = ResultVOUtil.error(result.getMessage(),resultMap.get("responseData"));
+								}
+								mft.set(threadID, returnVO);
 							}catch(java.lang.ClassCastException cce) {
 								cce.printStackTrace();
 							}catch(com.alibaba.fastjson.JSONException je) {
@@ -270,6 +274,7 @@ public class DubboService {
 				requestStr = lbq.take();
 				// 每隔 5s 与server通信一次
 				//requestStr = lbq.poll(5, TimeUnit.SECONDS);
+				
 				System.out.println("requestStr is:"+requestStr);
 				if(null == requestStr) {
 					requestStr = "geek";
@@ -322,15 +327,6 @@ public class DubboService {
 						}
 						@Override
 						public void channelActive(ChannelHandlerContext ctx) {
-							//when client connect to server, say hello.
-//							//ctx.writeAndFlush(params.toString());
-//							JSONObject params = new JSONObject();
-//							params.put("name", "Tticc");
-//							JSONObject requestJson = new JSONObject();
-//							requestJson.put("threadID", 1l);
-//							requestJson.put("serviceKey", "sayHello");
-//							requestJson.put("params", params);
-//							ctx.writeAndFlush(requestJson.toString());
 						}
 					});
 				}
@@ -338,17 +334,6 @@ public class DubboService {
 			Channel ch = b.connect(host, port).sync().channel();
 
 			ChannelFuture lastWriteFuture = null;
-			
-			// 使用LinkedBlockingQueue 来实现channel复用
-			// 整个client仍然是单线程的？所以才会因为LinkedBlockingQueue阻塞住？但是为什么调试的时候没事？
-			// 为什么有这样的入参：
-			// input: {"threadID":"19","serviceKey":"sayHello","params":{"name":"Tticc3"}}{"threadID":"17","serviceKey":"sayHello","params":{"name":"Tticc3"}}
-			////// 这全都是因为 netty 读取数据的原因。服务端会从块中读取数据。由于client端在一瞬间就writeAndFlush了4条数据
-			////// server端一次性读了这四条数据，导致数据解析失败。那么有两种解决方案
-			////// 1.server读取定长的数据
-			////// 2.server读取Object
-			////// 当然，实际上还有第3种，设置client端发送数据间隔。测试可用。
-			// 又发现了一个问题：为什么被关闭了？ java.io.IOException: 远程主机强迫关闭了一个现有的连接。
 			for(;;) {
 				String requestStr = "";
 				//requestStr = lbq.take();
@@ -367,15 +352,6 @@ public class DubboService {
 					 break;
 				}
 			}
-			
-//			JSONObject params = new JSONObject();
-//			params.put("name", "Tticc");
-//			JSONObject requestJson = new JSONObject();
-//			requestJson.put("threadID", 1l);
-//			requestJson.put("serviceKey", "sayHello");
-//			requestJson.put("params", params);
-			//this.ch.writeAndFlush(requestJson.toString());
-			// now send message to server, take Thread ID beyond basic info
 		}catch (InterruptedException e) {
 				e.printStackTrace();
 		}finally {
