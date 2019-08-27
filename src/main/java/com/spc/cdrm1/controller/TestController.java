@@ -100,6 +100,18 @@ public class TestController {
 		params.put("name", name);
 		return (ResultVO)dubboService.getDubboService("sayHello", params);
 	}
+	/**
+	 * netty Rpc 测试
+	 * @author Wen, Changying
+	 * @param name
+	 * @return
+	 * @date 2019年8月24日
+	 */
+	@GetMapping("/bye")
+	public ResultVO sayBye() {
+		JSONObject params = new JSONObject();
+		return (ResultVO)dubboService.getDubboService("sayBye", params);
+	}
 	
 	/**
 	 * 定时器线程池测试

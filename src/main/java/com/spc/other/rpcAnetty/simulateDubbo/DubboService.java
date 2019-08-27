@@ -33,14 +33,14 @@ import io.netty.handler.codec.string.StringEncoder;
 
 
 public class DubboService {
-/*	public static void main(String[] args) throws InterruptedException {
+	public static void main(String[] args) throws InterruptedException {
 		// 初始化client。
 		DubboService dsa = DubboService.getInstance();
 		Thread.sleep(5000);
 		
 		// 调用 dubbo 服务
 		
-		JSONObject params = new JSONObject();
+/*		JSONObject params = new JSONObject();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -51,9 +51,21 @@ public class DubboService {
 				params.put("name", "Tticc");
 				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
+		}, "Tticc").start();*/
+		
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				// 单例测试 成功
+				JSONObject par = new JSONObject();
+				DubboService ds = DubboService.getInstance();
+				System.out.println(ds.toString());
+				System.out.println("Tticc ****************************************************");
+				System.out.println("output in thread:"+ds.getDubboService("sayBye", par));
+			}
 		}, "Tticc").start();
 
-		new Thread(new Runnable() {
+/*		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				DubboService ds = DubboService.getInstance();
@@ -84,7 +96,7 @@ public class DubboService {
 				params.put("name", "Tticc3");
 				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
-		}, "Tticc3").start();
+		}, "Tticc3").start();*/
 		
 //		System.out.println("output in main:" + params);
 //		Thread.sleep(4000);
@@ -92,25 +104,6 @@ public class DubboService {
 //		params = (JSONObject) ds.getDubboService("sayHello", params);
 //		System.out.println("output in main 2:" + params);
 		
-		
-	}*/
-	
-	public static void main(String[] args) {
-		JSONObject j = new JSONObject();
-		j.put("tid", 12L);
-		j.put("spid", "122");
-		j.put("nullpid", "null");
-		j.put("sspid", "aaa");
-		System.out.println(j.getLongValue("tid"));
-		System.out.println(j.getLongValue("spid"));
-		System.out.println(j.getLong("nullpid"));
-		System.out.println(j.getLongValue("sspid"));
-		try {
-			Object msg = "hello world";
-			ResultVO rv = (ResultVO)msg;
-		}catch(java.lang.ClassCastException cce) {
-			System.out.println(cce.getMessage());
-		}
 		
 	}
 	

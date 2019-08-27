@@ -81,9 +81,9 @@ public class DubboServiceProvider {
 
 								/**
 								 * 待测试项
-								 * 1.Object req = requestObject.getData();拿到的是String还是JSONObject？
-								 * 2.有参方法的调用和无参方法的调用可以兼容吗？
-								 * 3.缺少参数的话，能正确提示吗？
+								 * 1.Object req = requestObject.getData();拿到的是String还是JSONObject？ 是String
+								 * 2.有参方法的调用和无参方法的调用可以兼容吗？ 可以兼容
+								 * 3.缺少参数的话，能正确提示吗？ 
 								 * 4.client需要对应修改调用失败的代码返回。
 								 */
 								ResultVO requestObject = (ResultVO)msg;
@@ -103,10 +103,10 @@ public class DubboServiceProvider {
 								
 								Method m = ServiceMap.serviceMap.get(methodName);
 								Parameter[] paramName = m.getParameters();
-								// 当前方法无参。需要if吗？
-								if(paramName != null && paramName.length == 0) {
-									result = ResultVOUtil.success(generateResultMap(obj,m.invoke(new ServiceImpl())));
-								}else {
+								// 当前方法无参。需要if吗？不需要，可以兼容
+//								if(paramName != null && paramName.length == 0) {
+//									result = ResultVOUtil.success(generateResultMap(obj,m.invoke(new ServiceImpl())));
+//								}else {
 									Map<String, Object> params = (Map<String, Object>) obj.get("params");
 									Class<?>[] paramClass = m.getParameterTypes();
 									Object[] param = new Object[paramName.length];
@@ -119,7 +119,7 @@ public class DubboServiceProvider {
 									}
 									// 正常返回
 									result = ResultVOUtil.success(generateResultMap(obj,m.invoke(new ServiceImpl(), param)));
-								}
+//								}
 							}catch(Exception e) {
 								result = ResultVOUtil.error(e.getMessage(), msg);
 							}
