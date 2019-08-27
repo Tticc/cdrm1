@@ -76,7 +76,9 @@ public class DubboServiceProvider {
 					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
 						@Override
 					    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-							ResultVO result = null; 
+							ResultVO result = null;
+							Map<String,Object> resultMap = new HashMap<String,Object>();
+							resultMap.put("requestData", msg);
 							try {
 
 								/**
@@ -118,10 +120,13 @@ public class DubboServiceProvider {
 										param[i] = paramObject;
 									}
 									// 正常返回
-									result = ResultVOUtil.success(generateResultMap(obj,m.invoke(new ServiceImpl(), param)));
+									//result = ;
+									resultMap.put("responseData", generateResultMap(obj,m.invoke(new ServiceImpl(), param)));
+									ResultVOUtil.success(resultMap);
 //								}
 							}catch(Exception e) {
-								result = ResultVOUtil.error(e.getMessage(), msg);
+								resultMap.put("responseData", e.getMessage());
+								ResultVOUtil.error(e.getMessage(), resultMap);
 							}
 					        ctx.writeAndFlush(result);
 					    }

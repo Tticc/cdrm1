@@ -40,7 +40,7 @@ public class DubboService {
 		
 		// 调用 dubbo 服务
 		
-/*		JSONObject params = new JSONObject();
+		JSONObject params = new JSONObject();
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -48,12 +48,12 @@ public class DubboService {
 				DubboService ds = DubboService.getInstance();
 				System.out.println(ds.toString());
 				System.out.println("Tticc ****************************************************");
-				params.put("name", "Tticc");
+				//params.put("name", "Tticc");
 				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
-		}, "Tticc").start();*/
+		}, "Tticc").start();
 		
-		new Thread(new Runnable() {
+/*		new Thread(new Runnable() {
 			@Override
 			public void run() {
 				// 单例测试 成功
@@ -63,7 +63,7 @@ public class DubboService {
 				System.out.println("Tticc ****************************************************");
 				System.out.println("output in thread:"+ds.getDubboService("sayBye", par));
 			}
-		}, "Tticc").start();
+		}, "Tticc").start();*/
 
 /*		new Thread(new Runnable() {
 			@Override
@@ -218,8 +218,12 @@ public class DubboService {
 								result = (ResultVO)msg;
 								
 								// 如果返回值为空，或失败，直接丢弃
-								if(result == null || !result.isSuccess()) 
+								if(result == null || result.getData() == null) 
 									return; // 丢弃，无法将数据返回对应线程
+								if(!result.isSuccess()) {
+									JSONObject reqJSON = (JSONObject)(((ResultVO)result.getData()).getData());
+									reqJSON.getLong("threadID");
+								}
 								
 								// 如果返回VO中的data为空，或data中的requestData为null，或requestData中的threadID为null，丢弃
 								if((resultMap = (Map<String,Object>)result.getData()) == null ||
