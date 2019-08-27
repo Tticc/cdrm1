@@ -48,7 +48,7 @@ public class DubboService {
 				DubboService ds = DubboService.getInstance();
 				System.out.println(ds.toString());
 				System.out.println("Tticc ****************************************************");
-				//params.put("name", "Tticc");
+				params.put("name", "Tticc");
 				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
 			}
 		}, "Tticc").start();

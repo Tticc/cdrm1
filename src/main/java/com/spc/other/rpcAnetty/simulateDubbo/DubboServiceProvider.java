@@ -121,12 +121,12 @@ public class DubboServiceProvider {
 									}
 									// 正常返回
 									//result = ;
-									resultMap.put("responseData", generateResultMap(obj,m.invoke(new ServiceImpl(), param)));
-									ResultVOUtil.success(resultMap);
+									resultMap.put("responseData", m.invoke(new ServiceImpl(), param));
+									result = ResultVOUtil.success(resultMap);
 //								}
 							}catch(Exception e) {
 								resultMap.put("responseData", e.getMessage());
-								ResultVOUtil.error(e.getMessage(), resultMap);
+								result = ResultVOUtil.error(e.getMessage(), resultMap);
 							}
 					        ctx.writeAndFlush(result);
 					    }
@@ -140,12 +140,6 @@ public class DubboServiceProvider {
 			listener.shutdownGracefully();
 			worker.shutdownGracefully();
 		}
-	}
-	private Object generateResultMap(Object requestData, Object responseData) {
-		Map<String, Object> resultMap = new HashMap<String,Object>();
-		resultMap.put("requestData", requestData);
-		resultMap.put("responseData", responseData);
-		return resultMap;
 	}
 	/**
 	 * StringDecoder,StringEncoder
