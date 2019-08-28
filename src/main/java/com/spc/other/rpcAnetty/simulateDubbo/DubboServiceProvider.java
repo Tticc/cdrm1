@@ -10,7 +10,6 @@ import com.spc.cdrm1.util.ResultVOUtil;
 import com.spc.cdrm1.vo.ResultVO;
 import com.spc.other.rpcAnetty.NettyRPC;
 import com.spc.other.rpcAnetty.ServiceImpl;
-import com.spc.other.rpcAnetty.ServiceMap;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;

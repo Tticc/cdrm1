@@ -1,7 +1,10 @@
 package com.spc.cdrm1;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Test;
 
 
 /**
@@ -11,6 +14,19 @@ import java.util.List;
  */
 public class DoSomething {
     private Buffer mBuf = new Buffer();
+    
+    @Test
+    public void test_annotation() {
+    	Annotation[] ans = TA.class.getAnnotations();
+    	if((ans = TA.class.getAnnotations()).length > 0) {
+    		System.out.println(ans[0]);
+    	}
+    	if(null == TA.class.getAnnotation(TestAnnotation.class)) {
+    		System.out.println("no annotation");
+    	}else {
+    		System.out.println("have annotation");
+    	}
+    }
 
     public void produce() {
         synchronized (this) {
@@ -107,4 +123,13 @@ public class DoSomething {
             new Thread(runProduce).start();
         }
     }
+}
+
+@TestAnnotation
+class SuTA{
+	
+}
+
+class TA extends SuTA{
+	
 }
