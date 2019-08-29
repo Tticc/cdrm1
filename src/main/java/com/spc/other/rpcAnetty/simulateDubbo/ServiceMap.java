@@ -57,8 +57,10 @@ public class ServiceMap {
 		Iterator<Class<?>> ite = listCla.iterator();
 		Class<?> currentItem;
 		while(ite.hasNext()) {
-			// 如果当前class是interface或原始类型，跳过
-			if((currentItem = ite.next()).isInterface() || currentItem.isPrimitive()) {
+			// 如果当前class是interface或原始类型，或者没有DubboServiceMe注解，跳过。
+			if((currentItem = ite.next()).isInterface() || 
+					currentItem.isPrimitive() || 
+					currentItem.getAnnotation(DubboServiceMe.class) == null) {
 				System.out.println("--- this is an interface or Premitive, skip: "+currentItem);
 				continue;
 			}

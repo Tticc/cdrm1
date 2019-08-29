@@ -34,7 +34,7 @@ import io.netty.handler.codec.string.StringEncoder;
 
 public class DubboService {
 	public static void main(String[] args) throws InterruptedException {
-		// 初始化client。
+		// 初始化并启动client。
 		DubboService dsa = DubboService.getInstance();
 		Thread.sleep(5000);
 		
@@ -48,8 +48,8 @@ public class DubboService {
 				DubboService ds = DubboService.getInstance();
 				System.out.println(ds.toString());
 				System.out.println("Tticc ****************************************************");
-				//params.put("name", "Tticc");
-				System.out.println("output in thread:"+ds.getDubboService("sayHello", params));
+				params.put("name", "Tticc");
+				System.out.println("output in thread:"+ds.getDubboService("GreetService_sayHello", params));
 			}
 		}, "Tticc").start();
 		
