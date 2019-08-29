@@ -49,7 +49,8 @@ lsof -i:8090  # 查看端口详细信息
 ### 查看log
 cat -n redis.conf | grep pass| more  # -n 打印行号  
 sed -n "500,520p" redis.conf  # 查看 [500,520] 行内容  
-cat -n redis.conf | tail -n +500 | head -n 20  # 查看
+cat -n redis.conf | tail -n +500 | head -n 20  # 查看。从500行开始，往后看20行
+tail -f -n 5 redis.conf  # -f 动态查看最后 n行日志
 
 ### 查看内存剩余
 free  # 剩余内存可以看作是 buff/cache + free 两个加起来

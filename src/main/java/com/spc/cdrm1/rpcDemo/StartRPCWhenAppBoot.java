@@ -1,5 +1,6 @@
 package com.spc.cdrm1.rpcDemo;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.Resource;
@@ -38,5 +39,10 @@ public class StartRPCWhenAppBoot implements ApplicationListener<ContextRefreshed
 //			}
 //		//}).start();
 //		});
+		
+		// 调用
+//		RpcService client = rpcFramework.call(RpcService.class, "localhost", 8000);
+//		client.sayHello("chad");
 	}
+	
 }

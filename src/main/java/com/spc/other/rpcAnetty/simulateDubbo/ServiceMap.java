@@ -12,19 +12,29 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-
+import com.spc.cdrm1.util.ClazzScanner;
 import com.spc.other.rpcAnetty.ServiceImpl;
 
-
+/**
+ * 抽出包扫描工具类
+ * https://www.cnblogs.com/zeng1994/p/59313120e95e2074981870c787cd69d9.html
+ * @author Wen, Changying
+ * 2019年8月28日
+ */
 public class ServiceMap {
 	public static Map<String, Method> serviceMap = new HashMap<String, Method>();
 
 	public static void main(String[] args) {
-		List<String> list = getClazzName("com.spc.other.rpcAnetty.simulateDubbo",true);
-		List<Class<?>> listCla = getAllClass(list);
+		//List<String> list = getClazzName("com.spc.other.rpcAnetty.simulateDubbo",true);
+		List<Class<?>> listCla = ClazzScanner.getAllClass("com.spc.other.rpcAnetty.simulateDubbo",true);
 		Iterator<Class<?>> ite = listCla.iterator();
+		Class<?> currentItem;
 		while(ite.hasNext()) {
-			System.out.println(ite.next());
+			if((currentItem = ite.next()).isInterface()) {
+				System.out.println("--- this is an interface: "+currentItem);
+				continue;
+			}
+			System.out.println(currentItem);
 		}
 	}
 	/**
