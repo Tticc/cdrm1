@@ -1,5 +1,7 @@
 package com.spc.cdrm1;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -26,6 +28,7 @@ import com.spc.cdrm1.util.ResultVOUtil;
 import net.bytebuddy.description.field.FieldDescription.InGenericShape;
 /**
  * <ol>
+ * <li>测试类型转换(Map)null;是否出错。没报错 2019-8-29</li>
  * <li>测试ResultVO 格式  2019-8-25</li>
  * <li>测试 不定长参数</li>
  * <li>Eclipse 不支持 @Nullable & @NonNull 检查</li>
@@ -48,6 +51,17 @@ import net.bytebuddy.description.field.FieldDescription.InGenericShape;
 @SuppressWarnings("unused")
 public class CommonTest {
 	
+	// 测试 反射方式获取方法的访问级别
+	@Test
+	public void test_getAccessible() {
+		Method[] ms = Sub.class.getDeclaredMethods();
+		for(Method m : ms) {
+			System.out.println("name:"+m.getName()+", getModifiers:"+m.getModifiers());
+			
+		}
+	}
+	
+	// 测试类型转换(Map)null;是否出错。没报错 2019-8-29
 	@Test
 	public void test_ClassCastException() {
 		JSONObject jo = null;
@@ -260,7 +274,7 @@ abstract class Super{
 		System.out.println(this.Key_user);//输出的是 key super，而不是子类的key sub 1
 	}
 	// protected方法可以被子类继承，并且能够在子类中重写并扩展访问级别
-	protected void protectedFunc() {
+	protected void publicCallProtected() {
 		System.out.println("super Name");
 	}
 	// 私有方法不会被子类继承
@@ -281,8 +295,17 @@ class Sub extends Super{
 	}
 
 	@Override
-	public void protectedFunc() {
-		super.protectedFunc();
+	public void publicCallProtected() {
+		super.publicCallProtected();
+	}
+	private void privateMethod() {
+		// do nothing;
+	}
+	protected void protectedMethod() {
+		
+	}
+	public void publicMethod() {
+		
 	}
 }
 

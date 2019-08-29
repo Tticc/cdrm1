@@ -10,6 +10,7 @@ import com.spc.cdrm1.util.ResultVOUtil;
 import com.spc.cdrm1.vo.ResultVO;
 import com.spc.other.rpcAnetty.NettyRPC;
 import com.spc.other.rpcAnetty.ServiceImpl;
+import com.spc.other.rpcAnetty.simulateDubbo.ServiceMap.ServiceNode;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -41,9 +42,115 @@ public class DubboServiceProvider {
 	}
 
 	public static void doProvide() throws Exception {
-		ServiceImpl si = new ServiceImpl();
-		new DubboServiceProvider().providedO(si, 8000);
+		//ServiceImpl si = new ServiceImpl();
+		//new DubboServiceProvider().providedO(si, 8000);
+		new DubboServiceProvider().providedOAnnotation(8000);
 	}
+
+	public void providedOAnnotation(int port) throws Exception {
+		if(port <=0 || port > 65536) 
+			throw new IllegalArgumentException("invalid port "+port);
+		System.out.println("service provided on port "+port);
+		EventLoopGroup listener = new NioEventLoopGroup();
+		EventLoopGroup worker = new NioEventLoopGroup();
+		try {
+			ServerBootstrap b = new ServerBootstrap();
+			b.group(listener,worker);
+			b.channel(NioServerSocketChannel.class);
+			b.option(ChannelOption.SO_BACKLOG, 128);
+			b.childOption(ChannelOption.SO_KEEPALIVE, true);
+			b.childHandler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				protected void initChannel(SocketChannel ch) throws Exception {
+					// outBound
+					// ObjectEncoder 将Java Object转为ByteBuf
+					ch.pipeline().addLast(new ObjectEncoder());
+					ch.pipeline().addLast(new ChannelOutboundHandlerAdapter() {
+						
+					});
+					
+					// inBound
+					// ObjectDecoder 将ByteBuf转为Java Object
+					ch.pipeline().addLast(new ObjectDecoder(Integer.MAX_VALUE,
+                            ClassResolvers.cacheDisabled(null)));
+					ch.pipeline().addLast(new ChannelInboundHandlerAdapter() {
+						@Override
+					    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+							ResultVO result = null;
+							ServiceNode sn = null;
+							Object service = null;
+							Method m = null;
+							
+							Map<String,Object> resultMap = new HashMap<String,Object>();
+							resultMap.put("requestData", msg);
+							try {
+
+								/**
+								 * 待测试项
+								 * 1.Object req = requestObject.getData();拿到的是String还是JSONObject？ 是String
+								 * 2.有参方法的调用和无参方法的调用可以兼容吗？ 可以兼容
+								 * 3.缺少参数的话，能正确提示吗？ 可以
+								 * 4.client需要对应修改调用失败的代码返回。已经改好
+								 */
+								ResultVO requestObject = (ResultVO)msg;
+						        System.out.println("input: "+requestObject.toString());
+						        Object req = requestObject.getData(); // 得到一个String，所以不需要做null判断。是吗？
+						        if(req instanceof String) {
+						        	System.out.println("this is a String");
+						        }
+						        if(req instanceof JSONObject) {
+						        	System.out.println("this is a JSONObject");
+						        }
+						        JSONObject obj = JSONObject.parseObject(req.toString());
+								String methodName = String.valueOf(obj.get("serviceKey"));
+								if("".equals(methodName) || "null".equals(methodName))
+									throw new Exception("未提供serviceKey.");
+								
+								if((sn = ServiceMap.serviceNodesMap.get(methodName)) == null || 
+										(m = sn.getMethod()) == null ||
+										(service = sn.getSerivceImpl()) == null)
+									throw new Exception("没有对应的service方法,请更正serviceKey!");
+//								Method m = ServiceMap.serviceMap.get(methodName);
+//								if(m == null) 
+								Parameter[] paramName = m.getParameters();
+								// 当前方法无参。需要if吗？不需要，可以兼容
+//								if(paramName != null && paramName.length == 0) {
+//									result = ResultVOUtil.success(generateResultMap(obj,m.invoke(new ServiceImpl())));
+//								}else {
+									Map<String, Object> params = (Map<String, Object>) obj.get("params");
+									Class<?>[] paramClass = m.getParameterTypes();
+									Object[] param = new Object[paramName.length];
+									for(int i = 0; i < paramName.length; i++) {
+										Object paramObject = params.get(paramName[i].getName());
+										if(paramObject == null) {
+											throw new Exception("缺少参数："+paramName[i].getName());
+										}
+										param[i] = paramObject;
+									}
+									// 正常返回
+									//result = ;
+									//resultMap.put("responseData", m.invoke(new ServiceImpl(), param));
+									resultMap.put("responseData", m.invoke(service, param));
+									result = ResultVOUtil.success(resultMap);
+//								}
+							}catch(Exception e) {
+								resultMap.put("responseData", e.getMessage());
+								result = ResultVOUtil.error(e.getMessage(), resultMap);
+							}
+					        ctx.writeAndFlush(result);
+					    }
+					});
+				}
+			});
+			ChannelFuture f = b.bind(port).sync();
+			f.channel().closeFuture().sync();
+			
+		}finally {
+			listener.shutdownGracefully();
+			worker.shutdownGracefully();
+		}
+	}
+	
 	public void providedO(final Object service, int port) throws Exception {
 		if(service == null) 
 			throw new IllegalArgumentException("service instance == null");
@@ -120,7 +227,8 @@ public class DubboServiceProvider {
 									}
 									// 正常返回
 									//result = ;
-									resultMap.put("responseData", m.invoke(new ServiceImpl(), param));
+									//resultMap.put("responseData", m.invoke(new ServiceImpl(), param));
+									resultMap.put("responseData", m.invoke(service, param));
 									result = ResultVOUtil.success(resultMap);
 //								}
 							}catch(Exception e) {
