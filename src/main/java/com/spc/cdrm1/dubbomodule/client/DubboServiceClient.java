@@ -1,8 +1,6 @@
-package com.spc.other.rpcAnetty.simulateDubbo;
+package com.spc.cdrm1.dubbomodule.client;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -12,8 +10,6 @@ import java.util.concurrent.TimeoutException;
 import com.alibaba.fastjson.JSONObject;
 import com.spc.cdrm1.util.ResultVOUtil;
 import com.spc.cdrm1.vo.ResultVO;
-import com.spc.other.rpcAnetty.simulateDubbo.MyFutureTask;
-
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -31,11 +27,10 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
-
-public class DubboService {
+public class DubboServiceClient {
 	public static void main(String[] args) throws InterruptedException {
 		// 初始化并启动client。
-		DubboService dsa = DubboService.getInstance();
+		DubboServiceClient dsa = DubboServiceClient.getInstance();
 		Thread.sleep(5000);
 		
 		// 调用 dubbo 服务
@@ -45,7 +40,7 @@ public class DubboService {
 			@Override
 			public void run() {
 				// 单例测试 成功
-				DubboService ds = DubboService.getInstance();
+				DubboServiceClient ds = DubboServiceClient.getInstance();
 				System.out.println(ds.toString());
 				System.out.println("Tticc ****************************************************");
 				params.put("name", "Tticc");
@@ -112,15 +107,15 @@ public class DubboService {
 	//private final String HOST = "127.0.0.1";
 	private static String host = "192.168.1.103";
 	private static int port = 8000;
-	public DubboService setMft(MyFutureTask<Object> mft) {
+	public DubboServiceClient setMft(MyFutureTask<Object> mft) {
 		this.mft = mft;
 		return this;
 	}
 	public static void setHost(String host) {
-		DubboService.host = host;
+		DubboServiceClient.host = host;
 	}
 	public static void setPort(int port) {
-		DubboService.port = port;
+		DubboServiceClient.port = port;
 	}
 	
 	private ExecutorService threadPool = Executors.newFixedThreadPool(1);
@@ -137,10 +132,10 @@ public class DubboService {
 	 * 这样，一旦久的线程死去，线程池会创建新线程，重新拿到任务进行client初始化。
 	 * </p>
 	 */
-	private DubboService() {
+	private DubboServiceClient() {
 		threadPool.execute(() -> initClientO());
 	}
-	public static final DubboService getInstance() {
+	public static final DubboServiceClient getInstance() {
 		return SingletonCreater.INSTANCE;
 	}
 	/**
@@ -156,7 +151,7 @@ public class DubboService {
 	 * 2019年8月17日
 	 */
 	private static class SingletonCreater{
-		private static final DubboService INSTANCE = new DubboService();
+		private static final DubboServiceClient INSTANCE = new DubboServiceClient();
 	}
 	
 	public Object getDubboService(String serviceKey,JSONObject params){

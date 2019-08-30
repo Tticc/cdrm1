@@ -5,9 +5,9 @@ import java.io.IOException;
 import org.junit.Test;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import com.spc.cdrm1.rpcDemo.RpcFramework;
-import com.spc.cdrm1.rpcDemo.RpcService;
-import com.spc.cdrm1.rpcDemo.RpcServiceImpl;
+import com.spc.cdrm1.dubbomodule.rpcDemo.RpcFramework;
+import com.spc.cdrm1.dubbomodule.rpcDemo.RpcService;
+import com.spc.cdrm1.dubbomodule.rpcDemo.RpcServiceImpl;
 
 public class RpcTester {
 	@Test

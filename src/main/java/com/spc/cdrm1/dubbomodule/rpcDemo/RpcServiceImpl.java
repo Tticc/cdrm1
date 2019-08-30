@@ -1,4 +1,4 @@
-package com.spc.cdrm1.rpcDemo;
+package com.spc.cdrm1.dubbomodule.rpcDemo;
 import org.springframework.stereotype.Component;
 
 @Component("rpcServiceImpl")

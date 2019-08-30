@@ -1,19 +1,18 @@
-package com.spc.other.rpcAnetty.simulateDubbo;
+package com.spc.cdrm1.dubbomodule.server;
 
-import java.io.File;
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
+
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 import com.spc.cdrm1.util.ClazzScanner;
-import com.spc.other.rpcAnetty.ServiceImpl;
+import com.spc.cdrm1.util.CommonUtil;
 
 /**
  * 抽出包扫描工具类
@@ -21,28 +20,29 @@ import com.spc.other.rpcAnetty.ServiceImpl;
  * @author Wen, Changying
  * 2019年8月28日
  */
-public class ServiceMap {
+@Component
+public class ServiceMap implements ApplicationContextAware{
 	public static Map<String, Method> serviceMap = new HashMap<String, Method>();
 	public static Map<String, ServiceNode> serviceNodesMap = new HashMap<String, ServiceNode>();
+	private static ApplicationContext applicationContext;
 
-	public static void main(String[] args) {}
 
 	/**
 	 * 类加载时初始化serviceNodesMap
 	 */
-	static {
-		try {
-			// 初始化map，annotation方式
-			initServiceMap("com.spc.other.rpcAnetty.simulateDubbo",true);
-			// 初始化map，hardcode方式
-			Method m = ServiceImpl.class.getMethod("sayHello", String.class);
-			serviceMap.put("sayHello", m);
-			Method bye = ServiceImpl.class.getMethod("sayBye");
-			serviceMap.put("sayBye", bye);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+//	static {
+//		try {
+//			// 初始化map，annotation方式
+//			initServiceMap("com.spc.other.rpcAnetty.simulateDubbo",true);
+//			// 初始化map，hardcode方式
+//			Method m = com.spc.other.rpcAnetty.ServiceImpl.class.getMethod("sayHello", String.class);
+//			serviceMap.put("sayHello", m);
+//			Method bye = com.spc.other.rpcAnetty.ServiceImpl.class.getMethod("sayBye");
+//			serviceMap.put("sayBye", bye);
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//	}
 	
 	/**
 	 * 根据特定包下的注解初始化serviceNodesMap，提供service。
@@ -50,7 +50,7 @@ public class ServiceMap {
 	 * @author Wen, Changying
 	 * @date 2019年8月29日
 	 */
-	public static void initServiceMap(String packageName, boolean recursive) {
+	public void initServiceMap(String packageName, boolean recursive) {
 		// 拿到特定包路径下面的所有class
 		List<Class<?>> listCla = ClazzScanner.getAllClass(packageName, recursive);
 		// 遍历，拿到所有method
@@ -66,10 +66,12 @@ public class ServiceMap {
 			}
 			System.out.println(currentItem.getSimpleName());
 			try {
-				generateMethod(currentItem, currentItem.newInstance());
-			} catch (InstantiationException | IllegalAccessException e) {
+				generateMethod(currentItem, 
+					applicationContext.getBean(CommonUtil.toLowerCaseFirstOne(currentItem.getSimpleName())));
+			}catch(Exception e) {
 				e.printStackTrace();
 			}
+			
 		}
 	}
 	
@@ -81,7 +83,7 @@ public class ServiceMap {
 	 * @param o
 	 * @date 2019年8月29日
 	 */
-	public static void generateMethod(Class<?> clz, Object o) {
+	private void generateMethod(Class<?> clz, Object o) {
 		Method[] ms = clz.getDeclaredMethods();
 		for(Method m : ms) {
 			// 如果是public方法，放入map，否则跳过。
@@ -109,6 +111,15 @@ public class ServiceMap {
 		public Object getSerivceImpl() {
 			return this.o;
 		}
+	}
+
+	/**
+	 * Spring容器启动后，会把 applicationContext 给自动注入进来，这里把 applicationContext 赋值到静态变量中，方便后续拿到容器对象
+	 */
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		ServiceMap.applicationContext = applicationContext;
+		
 	}
 	
 //	public static List<Class<?>> getAllClass(List<String> classFullPath){

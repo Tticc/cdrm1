@@ -1,4 +1,4 @@
-package com.spc.cdrm1.rpcDemo;
+package com.spc.cdrm1.dubbomodule.rpcDemo;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.concurrent.ExecutorService;

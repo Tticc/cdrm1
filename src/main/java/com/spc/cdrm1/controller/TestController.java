@@ -4,32 +4,27 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSONObject;
-import com.spc.cdrm1.rpcDemo.RpcFramework;
-import com.spc.cdrm1.rpcDemo.RpcService;
+import com.spc.cdrm1.dubbomodule.client.DubboServiceClient;
+import com.spc.cdrm1.dubbomodule.rpcDemo.RpcFramework;
+import com.spc.cdrm1.dubbomodule.rpcDemo.RpcService;
 import com.spc.cdrm1.service.ProductService;
 import com.spc.cdrm1.util.CommonUtil;
-import com.spc.cdrm1.util.CookieUtil;
 import com.spc.cdrm1.util.ResultVOUtil;
 import com.spc.cdrm1.util.redisUtil.RedisUtil_Value;
 import com.spc.cdrm1.vo.ResultVO;
-import com.spc.other.rpcAnetty.simulateDubbo.DubboService;
 
 
 
@@ -52,11 +47,11 @@ public class TestController {
 	@Resource
 	private ScheduledExecutorService scheduleThreadPool;
 	@Resource
-	private DubboService dubboService;
+	private DubboServiceClient dubboServiceClient;
 
 	/**
 	 * Rpc 测试
-	 * Rpc服务会在app启动时开启。{@linkplain com.spc.cdrm1.rpcDemo.StartRPCWhenAppBoot StartRPCWhenAppBoot}
+	 * Rpc服务会在app启动时开启。{@linkplain com.spc.cdrm1.dubbomodule.rpcDemo.StartRPCWhenAppBoot StartRPCWhenAppBoot}
 	 * @param name
 	 * @return
 	 * @throws Exception
@@ -98,7 +93,7 @@ public class TestController {
 	public ResultVO testNettyRpc(@PathVariable String name) {
 		JSONObject params = new JSONObject();
 		params.put("name", name);
-		return (ResultVO)dubboService.getDubboService("sayHello", params);
+		return (ResultVO)dubboServiceClient.getDubboService("sayHello", params);
 	}
 	/**
 	 * netty Rpc 测试
@@ -110,7 +105,7 @@ public class TestController {
 	@GetMapping("/bye")
 	public ResultVO sayBye() {
 		JSONObject params = new JSONObject();
-		return (ResultVO)dubboService.getDubboService("sayBye", params);
+		return (ResultVO)dubboServiceClient.getDubboService("sayBye", params);
 	}
 	
 	/**

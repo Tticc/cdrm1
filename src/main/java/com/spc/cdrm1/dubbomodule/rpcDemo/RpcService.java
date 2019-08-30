@@ -1,4 +1,4 @@
-package com.spc.cdrm1.rpcDemo;
+package com.spc.cdrm1.dubbomodule.rpcDemo;
 
 public interface RpcService {
 
