@@ -27,6 +27,13 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
+/**
+ * singleton。在需要的地方调用 {@code DubboServiceClient.getInstance();} 获得单例对象<br/>
+ * 这可以是一个独立于容器之外的工具。只用来调用远程服务。<br/>
+ * 为了方便配置dubboService的address和port，所以交给spring容器来管理。
+ * @author Wen, Changying
+ * 2019年8月31日
+ */
 public class DubboServiceClient {
 	public static void main(String[] args) throws InterruptedException {
 		// 初始化并启动client。
@@ -102,7 +109,7 @@ public class DubboServiceClient {
 		
 	}
 	
-	//private Channel ch;
+	// 初始化 mft。
 	private MyFutureTask<Object> mft = new MyFutureTask<Object>();
 	//private final String HOST = "127.0.0.1";
 	private static String host = "192.168.1.103";

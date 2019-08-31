@@ -36,7 +36,7 @@ public class DubboServiceConfig {
 			// 初始化服务列表
 			serviceMap.initServiceMap(dubboServicePath, true);
 			// 启动 dubbo 服务器
-			dsp.providedOAnnotation(dubboServerPort);
+			DubboServiceProvider.doProvide(100, dubboServerPort);
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
@@ -54,12 +54,18 @@ public class DubboServiceConfig {
 		System.out.println("\r\n\r\n");
 		DubboServiceClient.setHost(dubboHost);
 		DubboServiceClient.setPort(dubboPort);
-		return DubboServiceClient.getInstance().setMft(myFutureTask());
+		return DubboServiceClient.getInstance();
 	}
 	
-	@Bean(name="myFutureTask")
-	public MyFutureTask<Object> myFutureTask() {
-		return new MyFutureTask<Object>();
-	}
+	/**
+	 * MyFutureTask 应该是 DubboServiceClient 的一部分，不应该在外部初始化。
+	 * @author Wen, Changying
+	 * @return
+	 * @date 2019年8月31日
+	 */
+//	@Bean(name="myFutureTask")
+//	public MyFutureTask<Object> myFutureTask() {
+//		return new MyFutureTask<Object>();
+//	}
 	// ***************************************** client ***********************************************
 }

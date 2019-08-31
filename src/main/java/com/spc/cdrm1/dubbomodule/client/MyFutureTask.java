@@ -17,6 +17,7 @@ import java.util.concurrent.locks.LockSupport;
  * 模仿futuretask，用来在netty channel外获取channel的返回值。供外部调用的方法有3个：{@linkplain MyFutureTask#putMySelf() putMySelf()}、
  * {@linkplain MyFutureTask#set(long,V) set(long,V)}、{@linkplain MyFutureTask#myGet(long,TimeUnit) myGet(long,TimeUnit)}
  * <p>建议单例。</p>
+ * <p>MyFutureTask 应该是 DubboServiceClient 的一部分，不应该在外部初始化。应该设计成DubboServiceClient的内部类</p>
  * @author cv
  * Aug 13, 2019
  */

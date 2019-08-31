@@ -4,6 +4,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.spc.cdrm1.dubbomodule.server.ServiceMap.ServiceNode;
@@ -37,13 +39,33 @@ import io.netty.handler.codec.string.StringEncoder;
 public class DubboServiceProvider {
 
 	public static void main(String[] args) throws Exception {
-		doProvide();
+		doProvide(1, 8000);
 	}
-
-	public static void doProvide() throws Exception {
-		//com.spc.other.rpcAnetty.ServiceImpl si = new com.spc.other.rpcAnetty.ServiceImpl();
-		//new DubboServiceProvider().providedO(si, 8000);
-		new DubboServiceProvider().providedOAnnotation(8000);
+	private static ExecutorService threadPool = Executors.newFixedThreadPool(1);
+	/**
+	 * 将 dubbo server放到线程池中。提供service服务。<br/>
+	 * 为了避免当前server的线程意外终止导致服务不可用，在初始化的时候将taskNum-1个任务放入等待队列，
+	 * 利用线程池特性，即使线程意外终止，也能立刻启动下一个线程，并重新提供服务。
+	 * @author Wen, Changying
+	 * @param taskNum 等待任务数
+	 * @param port 端口
+	 * @throws Exception
+	 * @date 2019年8月31日
+	 */
+	public static void doProvide(int taskNum, int port) throws Exception {
+		if(taskNum <= 0 ) throw new Exception("taskNum必须大于0！");
+		if(port <= 0 || port > 65536) 
+			throw new IllegalArgumentException("invalid port "+port);
+		for(int i = 0; i < taskNum; i++) {
+			threadPool.execute(() -> {
+				try {
+					new DubboServiceProvider().providedOAnnotation(port);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+		}
+		
 	}
 
 	public void providedOAnnotation(int port) throws Exception {
