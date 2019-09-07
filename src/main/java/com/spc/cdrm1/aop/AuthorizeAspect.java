@@ -36,6 +36,11 @@ public class AuthorizeAspect {
 	@Autowired
 	private CommonService commonService;
 	
+	/**
+	 * 定义切点。
+	 * @author Wen, Changying
+	 * @date 2019年9月2日
+	 */
 	@Pointcut("execution(public * com.spc.cdrm1.controller.*.*(..))" //切点为controller包下所有类，所有方法
 			//除开VueController* 的 index* 方法
 		    +"&& !execution(public * com.spc.cdrm1.controller.VueController*.index*(..))" 
@@ -46,6 +51,13 @@ public class AuthorizeAspect {
 			)
 	public void verify() {}
 	
+	/**
+	 * 对切点{@linkplain AuthorizeAspect#verify() verify()}进行{@code @Before} 拦截。拿到request，调用{@linkplain AuthorizeAspect#checkCookie(HttpServletRequest, String) checkCookie}
+	 * 检查。
+	 * @author Wen, Changying
+	 * @throws CommonException
+	 * @date 2019年9月2日
+	 */
 	@Before("verify()")
 	public void doVerify() throws CommonException {
 		ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -53,6 +65,14 @@ public class AuthorizeAspect {
 		//检查 cookie，判断是否登录
 		//checkCookie(req, TOKEN);
 	}
+	/**
+	 * 检查请求req的cookie中时候包含cookie，然后到redis中检查是否过期
+	 * @author Wen, Changying
+	 * @param req
+	 * @param name
+	 * @return
+	 * @date 2019年9月2日
+	 */
 	private boolean checkCookie(HttpServletRequest req, String name) {
 		ResultVO result = commonService.checkCookieIfAvailable(req, TOKEN);
 		if(result.getCode() != ResultEnum.SUCCESS.getCode()) {

@@ -58,32 +58,21 @@ public class TestController {
 	 * Aug 4, 2019
 	 * @author cv
 	 */
-	@GetMapping("/hello/{name}")
-	public ResultVO testRpc(@PathVariable String name) throws Exception {
-		RpcService service = rpcFramework.call(RpcService.class, "127.0.0.1", 8080);
-		Future<Object> f = threadPool.submit(new Callable<Object>() {
-			@Override
-			public Object call() throws Exception {
-				//Thread.sleep(3000);
-				return (service.sayHello(name));
-			}
-		});
-		return ResultVOUtil.success(f.get());
-		//FutureTask
-//		FutureTask<Object> f = new FutureTask<Object>(new Callable<Object>() {
+//	@GetMapping("/hello/{name}")
+//	public ResultVO testRpc(@PathVariable String name) throws Exception {
+//		RpcService service = rpcFramework.call(RpcService.class, "127.0.0.1", 8080);
+//		Future<Object> f = threadPool.submit(new Callable<Object>() {
 //			@Override
 //			public Object call() throws Exception {
 //				//Thread.sleep(3000);
 //				return (service.sayHello(name));
 //			}
 //		});
-//		new Thread(f).start();
 //		return ResultVOUtil.success(f.get());
-		
-
-	}
+//	}
+	
 	/**
-	 * netty Rpc 测试
+	 * netty 测试
 	 * @author Wen, Changying
 	 * @param name
 	 * @return
@@ -93,10 +82,10 @@ public class TestController {
 	public ResultVO testNettyRpc(@PathVariable String name) {
 		JSONObject params = new JSONObject();
 		params.put("name", name);
-		return (ResultVO)dubboServiceClient.getDubboService("sayHello", params);
+		return (ResultVO)dubboServiceClient.getDubboService("GreetService_sayHello", params);
 	}
 	/**
-	 * netty Rpc 测试
+	 * netty 测试
 	 * @author Wen, Changying
 	 * @param name
 	 * @return
@@ -105,7 +94,7 @@ public class TestController {
 	@GetMapping("/bye")
 	public ResultVO sayBye() {
 		JSONObject params = new JSONObject();
-		return (ResultVO)dubboServiceClient.getDubboService("sayBye", params);
+		return (ResultVO)dubboServiceClient.getDubboService("GreetService_sayBye", params);
 	}
 	
 	/**

@@ -15,6 +15,12 @@ import com.spc.cdrm1.util.redisUtil.RedisUtil_Value;
 import com.spc.cdrm1.vo.ResultVO;
 
 
+/**
+ * 登录测试。进入{@linkplain LoginController#login(HttpServletResponse, String, String) login}将信息保存。
+ * 登录拦截在{@linkplain com.spc.cdrm1.aop.AuthorizeAspect#doVerify() doVerify}中实现
+ * @author Wen, Changying
+ * 2019年9月2日
+ */
 @RestController
 @RequestMapping("/login")
 public class LoginController {
@@ -29,9 +35,20 @@ public class LoginController {
 	private ProductService productService;
 	
 	
+	/**
+	 * 测试用login，判定用户名和密码，如果登录成功，将用户信息存入cookie和redis。
+	 * @author Wen, Changying
+	 * @param res
+	 * @param name
+	 * @param password
+	 * @return
+	 * @date 2019年9月2日
+	 */
 	@GetMapping("login")
-	public ResultVO login(HttpServletResponse res) {
-		String value = "test";
+	public ResultVO login(HttpServletResponse res, String name, String password) {
+		//if(!("chad".equals(name) && "111".equals(password))) return ResultVOUtil.error("用户名或密码错误！");
+		String value = name;
+		value = "chad";
 		int time = 600;
 		CookieUtil.setCookie(res, TOKEN, value, time);
 		redisUtil_Value.setValue(String.format(TOKEN_PREFIX, value), "0", time);

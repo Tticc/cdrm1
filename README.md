@@ -55,6 +55,10 @@ tail -f -n 5 redis.conf  # -f 动态查看最后 n行日志
 ### 查看内存剩余
 free  # 剩余内存可以看作是 buff/cache + free 两个加起来
 
+### 查看文件大小
+du -sh  # 查看当前文件夹大小。单位是M
+du -sk filename  # 查看指定文件大小。单位是byte
+
 # git
 git rm -r dir
 git commit -m "re dir"

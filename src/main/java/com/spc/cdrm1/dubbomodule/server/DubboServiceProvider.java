@@ -68,8 +68,15 @@ public class DubboServiceProvider {
 		
 	}
 
+	/**
+	 * 第3版。对象序列化传输数据，使用注解获取服务列表
+	 * @author Wen, Changying
+	 * @param port
+	 * @throws Exception
+	 * @date 2019年9月2日
+	 */
 	public void providedOAnnotation(int port) throws Exception {
-		if(port <=0 || port > 65536) 
+		if(port <= 0 || port > 65536) 
 			throw new IllegalArgumentException("invalid port "+port);
 		System.out.println("service provided on port "+port);
 		EventLoopGroup listener = new NioEventLoopGroup();
@@ -130,7 +137,7 @@ public class DubboServiceProvider {
 								if((sn = ServiceMap.serviceNodesMap.get(methodName)) == null || 
 										(m = sn.getMethod()) == null ||
 										(service = sn.getSerivceImpl()) == null)
-									throw new Exception("没有对应的service方法,请更正serviceKey!");
+									throw new Exception("没有找到对于serviceKey:"+methodName+"对应的service方法,请更正serviceKey!");
 //								Method m = ServiceMap.serviceMap.get(methodName);
 //								if(m == null) 
 								Parameter[] paramName = m.getParameters();
@@ -172,6 +179,14 @@ public class DubboServiceProvider {
 		}
 	}
 	
+	/**
+	 * 第2版。对象序列化传输数据
+	 * @author Wen, Changying
+	 * @param service
+	 * @param port
+	 * @throws Exception
+	 * @date 2019年9月2日
+	 */
 	public void providedO(final Object service, int port) throws Exception {
 		if(service == null) 
 			throw new IllegalArgumentException("service instance == null");
@@ -270,7 +285,7 @@ public class DubboServiceProvider {
 		}
 	}
 	/**
-	 * StringDecoder,StringEncoder
+	 * 第1版，使用字符串传输数据。StringDecoder,StringEncoder
 	 * @author Wen, Changying
 	 * @param service
 	 * @param port

@@ -30,7 +30,7 @@ public class DubboServiceConfig {
 
 	// ***************************************** server ***********************************************
 	@Bean(name="dubboServiceProvider")
-	public DubboServiceProvider dubboServiceProvider() {
+	public DubboServiceProvider dubboServiceProvider() throws Exception {
 		DubboServiceProvider dsp = new DubboServiceProvider();
 		try {
 			// 初始化服务列表
@@ -40,6 +40,7 @@ public class DubboServiceConfig {
 		} catch (Exception e) {
 			e.printStackTrace();
 			log.error(e.getMessage());
+			throw e;
 		}
 		return dsp;
 	}
@@ -58,7 +59,7 @@ public class DubboServiceConfig {
 	}
 	
 	/**
-	 * MyFutureTask 应该是 DubboServiceClient 的一部分，不应该在外部初始化。
+	 * MyFutureTask 应该是 DubboServiceClient 的一部分，不应该在外部初始化。所以注释掉。
 	 * @author Wen, Changying
 	 * @return
 	 * @date 2019年8月31日

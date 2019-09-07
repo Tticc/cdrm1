@@ -8,7 +8,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
 
+import org.springframework.stereotype.Component;
+
+/**
+ * 网上抄的。类扫描器
+ * @author Wen, Changying
+ * 2019年9月5日
+ */
+@Component
 public class ClazzScanner {
 
 	private static final String CLASS_SUFFIX = ".class";
@@ -33,7 +42,8 @@ public class ClazzScanner {
 	
 	public static List<String> getClazzName(String packageName, boolean recursive) {
 		List<String> result = new LinkedList<String>();
-		String packageDirName = packageName.replaceAll("\\.", "/");
+		// 打包部署到服务器时出错了，估计是这里有问题。
+		String packageDirName = packageName.replaceAll("\\.", "/");// Matcher.quoteReplacement(File.separator)
 		Enumeration<URL> dirs;
 		try {
 			dirs = Thread.currentThread().getContextClassLoader().getResources(packageDirName);

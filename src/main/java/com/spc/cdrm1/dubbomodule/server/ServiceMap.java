@@ -7,11 +7,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import com.spc.cdrm1.util.ClazzScanner;
+import com.spc.cdrm1.util.ClazzScannerWithinSpring;
 import com.spc.cdrm1.util.CommonUtil;
 
 /**
@@ -26,6 +28,8 @@ public class ServiceMap implements ApplicationContextAware{
 	public static Map<String, ServiceNode> serviceNodesMap = new HashMap<String, ServiceNode>();
 	private static ApplicationContext applicationContext;
 
+	@Autowired
+	private ClazzScanner clazzScanner;
 
 	/**
 	 * 类加载时初始化serviceNodesMap
@@ -48,11 +52,13 @@ public class ServiceMap implements ApplicationContextAware{
 	 * 根据特定包下的注解初始化serviceNodesMap，提供service。
 	 * <p><b>只 保 存 public 方 法</b></p>
 	 * @author Wen, Changying
+	 * @throws Exception 
 	 * @date 2019年8月29日
 	 */
-	public void initServiceMap(String packageName, boolean recursive) {
+	public void initServiceMap(String packageName, boolean recursive) throws Exception {
 		// 拿到特定包路径下面的所有class
-		List<Class<?>> listCla = ClazzScanner.getAllClass(packageName, recursive);
+		//List<Class<?>> listCla = clazzScanner.getAllClass(packageName, recursive);
+		List<Class<?>> listCla = ClazzScannerWithinSpring.loadAllClass(new String[] {packageName});
 		// 遍历，拿到所有method
 		Iterator<Class<?>> ite = listCla.iterator();
 		Class<?> currentItem;
