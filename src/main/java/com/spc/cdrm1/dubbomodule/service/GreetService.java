@@ -16,4 +16,8 @@ public class GreetService {
 	public String sayBye() {
 		return "bye, client";
 	}
+	
+	public int add(int a, int b) {
+		return a+b;
+	}
 }

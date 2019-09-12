@@ -28,9 +28,6 @@ public class ServiceMap implements ApplicationContextAware{
 	public static Map<String, ServiceNode> serviceNodesMap = new HashMap<String, ServiceNode>();
 	private static ApplicationContext applicationContext;
 
-	@Autowired
-	private ClazzScanner clazzScanner;
-
 	/**
 	 * 类加载时初始化serviceNodesMap
 	 */

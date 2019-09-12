@@ -13,11 +13,13 @@ import java.util.regex.Matcher;
 import org.springframework.stereotype.Component;
 
 /**
- * 网上抄的。类扫描器
+ * 网上抄的。类扫描器<br/>
+ * tomcat 服务器可用
+ * weblogic 不可用
  * @author Wen, Changying
  * 2019年9月5日
  */
-@Component
+
 public class ClazzScanner {
 
 	private static final String CLASS_SUFFIX = ".class";
